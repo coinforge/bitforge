@@ -2,25 +2,24 @@ import random, struct, binascii, collections
 import networks, ecdsa
 # class: PrivateKey
 # new PrivateKey(data, network)
-# PrivateKey.fromString
-# privateKey._classifyArguments(data, network)
-# PrivateKey.fromJSON(json)
-# PrivateKey.fromBuffer(arg, network)
-# PrivateKey.fromRandom([network])
-# PrivateKey.getValidationError(data, [network])
+
+# PrivateKey.fromHex()
+# PrivateKey.toHex()
+
+# PrivateKey.fromBytes(arg, network)
+# PrivateKey.toBytes(arg, network)
+
 # PrivateKey.isValid(data, [network])
-# privateKey.toString()
-# privateKey.toWIF()
-# privateKey.toBigNumber()
-# privateKey.toBuffer()
 # privateKey.toPublicKey()
 # privateKey.toAddress([network])
-# privateKey.toObject()
-# privateKey.inspect()
+
+# privateKey.toDict()
+# PrivateKey.fromDict(obj)
+
 
 
 rng     = random.SystemRandom()
-KEY_MAX = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141
+KEY_MAX = ecdsa.generator_secp256k1.order()
 
 def randomKeyNumber():
     return rng.randint(1, KEY_MAX - 1)
@@ -63,6 +62,9 @@ class PrivateKey(BasePrivateKey):
     def toBytes(self):
         return ecdsa.encoding.to_bytes_32(self.number)
 
+    def toHex(self):
+        return binascii.hexlify(self.toBytes())
+
     def toWIF(self):
         bytes = chr(self.network.wif_prefix) + self.toBytes()
 
@@ -72,12 +74,4 @@ class PrivateKey(BasePrivateKey):
         return ecdsa.encoding.b2a_hashed_base58(bytes)
 
     def __repr__(self):
-        return "<PrivateKey: %s, network: %s>" % (self.number, self.network.name)
-
-key = PrivateKey.fromWIF('KyNhNxb9Y4n7rsep8jeZwKXTfWCs1MgoVM7GaSxWP4V4o43bzBDB')
-print key, key.toWIF()
-
-# TODO:
-# print
-# fromWIF (x)
-# 
+        return "<PrivateKey: %s, network: %s>" % (self.toHex(), self.network.name)
