@@ -61,12 +61,18 @@ default = livenet = Network(
   ]
 )
 
-def find(network):
-    if isinstance(network, Network):
-        return network
+_networks = [livenet, testnet]
+
+def find(data, attr = 'name'):
+    if isinstance(data, Network):
+        return data
 
     try:
-        return getattr(sys.modules[__name__], network)
+      for network in _networks:
+        if getattr(network, attr) is data:
+          return network
 
     except AttributeError:
-        raise UnknownNetwork(network)
+      pass
+    
+    raise UnknownNetwork(data)

@@ -47,8 +47,19 @@ class PrivateKey(BasePrivateKey):
     #     network = networks.find(network)
     #
     #     return PrivateKey(number, network)
-    #
-    #
+
+    @staticmethod
+    def fromWIF(wif):
+        data = ecdsa.encoding.a2b_hashed_base58(wif)
+        network = networks.find(ord(data[0]), 'wif_prefix')
+        compressed = len(data) > 33
+
+        if compressed:
+            data = data[:-1]   
+
+        number = ecdsa.encoding.from_bytes_32(data[1:])
+        return PrivateKey(number, network, compressed)
+
     def toBytes(self):
         return ecdsa.encoding.to_bytes_32(self.number)
 
@@ -61,11 +72,12 @@ class PrivateKey(BasePrivateKey):
         return ecdsa.encoding.b2a_hashed_base58(bytes)
 
     def __repr__(self):
-        return "PrivateKey(%s @%s)" % (self.number, self.network.name)
+        return "<PrivateKey: %s, network: %s>" % (self.number, self.network.name)
 
+key = PrivateKey.fromWIF('KyNhNxb9Y4n7rsep8jeZwKXTfWCs1MgoVM7GaSxWP4V4o43bzBDB')
+print key, key.toWIF()
 
-
-p = PrivateKey(10)
-print p
-print p.toWIF()
-# print PrivateKey.fromArray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0])
+# TODO:
+# print
+# fromWIF (x)
+# 
