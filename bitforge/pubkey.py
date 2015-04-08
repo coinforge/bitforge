@@ -1,5 +1,6 @@
-import random, struct, binascii, collections
+import binascii, collections
 import networks, ecdsa
+from address import Address
 # class: PublicKey
 # new PublicKey(data, extra)
 
@@ -47,6 +48,10 @@ class PublicKey(BasePublicKey):
 
     def toHex(self):
         return binascii.hexlify(self.toBytes())
+
+    @property
+    def address(self):
+        return Address.fromPublicKey(self)
 
     def __repr__(self):
         return "<PublicKey: %s, network: %s>" % (self.toHex(), self.network.name)

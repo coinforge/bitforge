@@ -1,6 +1,7 @@
 import random, struct, binascii, collections
 import networks, ecdsa
 from pubkey import PublicKey
+from address import Address
 # class: PrivateKey
 # new PrivateKey(data, network)
 
@@ -77,6 +78,10 @@ class PrivateKey(BasePrivateKey):
     @property
     def publickey(self):
         return PublicKey.fromPrivateKey(self)
+
+    @property
+    def address(self):
+        return Address.fromPublicKey(self.publickey)
 
     def __repr__(self):
         return "<PrivateKey: %s, network: %s>" % (self.toHex(), self.network.name)
