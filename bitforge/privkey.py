@@ -1,5 +1,6 @@
 import random, struct, binascii, collections
 import networks, ecdsa
+from pubkey import PublicKey
 # class: PrivateKey
 # new PrivateKey(data, network)
 
@@ -72,6 +73,10 @@ class PrivateKey(BasePrivateKey):
             bytes += '\1'
 
         return ecdsa.encoding.b2a_hashed_base58(bytes)
+
+    @property
+    def publickey(self):
+        return PublicKey.fromPrivateKey(self)
 
     def __repr__(self):
         return "<PrivateKey: %s, network: %s>" % (self.toHex(), self.network.name)

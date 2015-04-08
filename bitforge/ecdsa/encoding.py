@@ -235,14 +235,15 @@ def sec_to_public_pair(sec):
     sec0 = sec[:1]
     if sec0 == b'\4':
         y = from_bytes_32(sec[33:65])
-        from .ecdsa import generator_secp256k1, is_public_pair_valid
+        from ecdsa import generator_secp256k1, is_public_pair_valid
         public_pair = (x, y)
         # verify this is on the curve
         if not is_public_pair_valid(generator_secp256k1, public_pair):
             raise EncodingError("invalid (x, y) pair")
         return public_pair
     if sec0 in (b'\2', b'\3'):
-        from .ecdsa import public_pair_for_x, generator_secp256k1
+        from ecdsa import public_pair_for_x
+        from secp256k1 import generator_secp256k1
         return public_pair_for_x(generator_secp256k1, x, is_even=(sec0 == b'\2'))
     raise EncodingError("bad sec encoding for public key")
 
