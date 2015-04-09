@@ -51,8 +51,8 @@ class Address(BaseAddress):
         return Address(hash_bytes, network, Address.Type.PublicKeyHash)
 
     def __str__(self):
-        prefix = chr(self.network.pubkeyhash)
-        return utils.encoding.hash160_sec_to_bitcoin_address(self.hash_bytes, prefix)
+        prefix = getattr(self.network, self.type.value)
+        return utils.encoding.hash160_sec_to_bitcoin_address(self.hash_bytes, chr(prefix))
 
     def __repr__(self):
         return "<Address: %s, type: %s, network: %s>" % (str(self), self.type.name, self.network.name)
