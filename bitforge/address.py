@@ -1,6 +1,6 @@
 from enum import Enum
 import binascii, collections
-import networks, ecdsa
+import networks, utils
 # class: Address
 # new Address(data, network, [type])
 # Address.PayToPublicKeyHash
@@ -35,7 +35,8 @@ class Address(BaseAddress):
 
     class Type(Enum):
         PublicKeyHash = 'pubkeyhash';
-        ScriptHash = 'scripthash';
+        ScriptHash    = 'scripthash';
+
 
     def __new__(cls, hash_bytes, network = networks.default, type = None):
         network = networks.find(network)
@@ -46,12 +47,12 @@ class Address(BaseAddress):
 
     @staticmethod
     def fromPublicKey(pubkey, network = networks.default):
-        hash_bytes = ecdsa.encoding.hash160(pubkey.toBytes())
+        hash_bytes = utils.encoding.hash160(pubkey.toBytes())
         return Address(hash_bytes, network, Address.Type.PublicKeyHash)
 
     def __str__(self):
         prefix = chr(self.network.pubkeyhash)
-        return ecdsa.encoding.hash160_sec_to_bitcoin_address(self.hash_bytes, prefix)
+        return utils.encoding.hash160_sec_to_bitcoin_address(self.hash_bytes, prefix)
 
     def __repr__(self):
         return "<Address: %s, type: %s, network: %s>" % (str(self), self.type.name, self.network.name)

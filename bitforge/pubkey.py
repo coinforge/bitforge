@@ -1,5 +1,5 @@
 import binascii, collections
-import networks, ecdsa
+import networks, utils
 from address import Address
 # class: PublicKey
 # new PublicKey(data, extra)
@@ -29,13 +29,13 @@ class PublicKey(BasePublicKey):
 
     @staticmethod
     def fromPrivateKey(privkey):
-        point = ecdsa.public_pair_for_secret_exponent(ecdsa.generator_secp256k1, privkey.number)
+        point = utils.public_pair_for_secret_exponent(utils.generator_secp256k1, privkey.number)
         return PublicKey(point, privkey.network, privkey.compressed)
 
     @staticmethod
     def fromBytes(bytes, network = networks.default):
-        point = ecdsa.encoding.sec_to_public_pair(bytes)
-        compressed = ecdsa.encoding.is_sec_compressed(bytes)
+        point = utils.encoding.sec_to_public_pair(bytes)
+        compressed = utils.encoding.is_sec_compressed(bytes)
         return PublicKey(point, network, compressed)
 
     @staticmethod
@@ -44,7 +44,7 @@ class PublicKey(BasePublicKey):
         return PublicKey.fromBytes(bytes, network)
 
     def toBytes(self):
-        return ecdsa.encoding.public_pair_to_sec(self.point, self.compressed)
+        return utils.encoding.public_pair_to_sec(self.point, self.compressed)
 
     def toHex(self):
         return binascii.hexlify(self.toBytes())
