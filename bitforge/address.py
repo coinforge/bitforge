@@ -46,9 +46,26 @@ class Address(BaseAddress):
         return super(Address, cls).__new__(cls, hash_bytes, network, type)
 
     @staticmethod
-    def fromPublicKey(pubkey, network = networks.default):
+    def fromPublicKey(pubkey):
         hash_bytes = utils.encoding.hash160(pubkey.toBytes())
-        return Address(hash_bytes, network, Address.Type.PublicKeyHash)
+        return Address(hash_bytes, pubkey.network, Address.Type.PublicKeyHash)
+
+    @staticmethod
+    def createMultisig(pubkeys, threshold):
+        from script import Script
+        return Address.payingTo(Script.buildMultisigOut(pubkeys, threshold), pubkeys[0].network);
+
+    @staticmethod
+    def payingTo(script, network = networks.default):
+        from script import Script
+        if not isinstance(script, Script):
+            raise ValueError('%s script must be instnace of Script', script)
+
+        return Address.fromScriptHash(utils.encoding.hash160(script.toBytes()), network)
+
+    @staticmethod
+    def fromScriptHash(hash_bytes, network = networks.default):
+        return Address(hash_bytes, network, Address.Type.ScriptHash)
 
     def __str__(self):
         prefix = getattr(self.network, self.type.value)
