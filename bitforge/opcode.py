@@ -5,37 +5,30 @@ class Opcode(Enum):
 
     # TODO: Make consutrctor support string args
     @staticmethod
-    def fromString(name):
+    def from_name(name):
         return getattr(Opcode, name)
 
     @staticmethod
-    def fromSmallInt(n):
-        if not 0 <= n <= 16:
-            raise ValueError('Invalid Argument: n must be between 0 and 16')
+    @from_int(n):
+        if 0 <= n <= 16:
+            return Opcode.OP_0 if n == 0 else Opcode(Opcode.OP_1.value + n - 1)
 
-        if n is 0:
-            return Opcode.OP_0
+        else
+            raise ValueError("Expected number in range [0, 16], got %d" % n)
 
-        return Opcode(Opcode.OP_1.value + n - 1)
+    def is_push(self):
+        return self in [
+            Opcode.OP_PUSHDATA1, Opcode.OP_PUSHDATA2, Opcode.OP_PUSHDATA4
+        ]
 
-    @staticmethod
-    def isSmallInt(opcode):
-        if isinstance(opcode, Opcode):
-            opcode = opcode.value
-        return opcode is Opcode.OP_0.value \
-            or Opcode.OP_1.value <= opcode <= Opcode.OP_16.value
-
-    def pushesData(self):
-        return self in [Opcode.OP_PUSHDATA1, Opcode.OP_PUSHDATA2, Opcode.OP_PUSHDATA4]
-
-    def toHex(self):
+    def to_hex(self):
         return hex(self.value)
 
     def __str__(self):
         return self.name
 
     def __repr__(self):
-        return "<OPCode: %s, hex: %s, decimal: %s>" % (str(self), self.toHex(), self.value)
+        return "<OPCode: %s, hex: %s, decimal: %s>" % (str(self), self.to_hex(), self.value)
 
     # push value
     OP_FALSE = 0

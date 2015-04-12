@@ -1,61 +1,47 @@
 import binascii, collections
 import networks, utils
 from address import Address
-# class: PublicKey
-# new PublicKey(data, extra)
 
-# publicKey.toBytes()
-# publicKey.fromBytes()
 
-# PublicKey.fromPoint(point, [compressed])
-# PublicKey.fromX(odd, x)
-
-# PublicKey.isValid(data)
-# publicKey.toAddress(network)
-
-# PublicKey.fromDict(json)
-# publicKey.toDict()
-# publicKey._getID()
-
-BasePublicKey = collections.namedtuple('PublicKey', ['point', 'network', 'compressed'])
+BasePublicKey = collections.namedtuple('PublicKey',
+    ['pair', 'network', 'compressed']
+)
 
 class PublicKey(BasePublicKey):
     # TODO: compressed to method???
-    # TODO: point -> pair
-    # TODO: check arguments: consistent across constructors, naming, arguments
-    def __new__(cls, point, network = networks.default, compressed = True):
-        network = networks.find(network)
+    # TODO: check arguments
+    def __new__(cls, pair, network = networks.default, compressed = True):
+        network = networks.find(network)  # may raise UnknownNetwork
 
-        # check arguments
-
-        return super(PublicKey, cls).__new__(cls, point, network, compressed)
+        return super(PublicKey, cls).__new__(cls, pair, network, compressed)
 
     @staticmethod
-    def fromPrivateKey(privkey):
-        point = utils.public_pair_for_secret_exponent(utils.generator_secp256k1, privkey.number)
-        return PublicKey(point, privkey.network, privkey.compressed)
+    def from_private_key(privkey):
+        pair = utils.public_pair_for_secret_exponent(
+            utils.generator_secp256k1, privkey.seed
+        )
+
+        return PublicKey(pair, privkey.network, privkey.compressed)
 
     @staticmethod
-    def fromBytes(bytes, network = networks.default):
-        point = utils.encoding.sec_to_public_pair(bytes)
+    def from_bytes(bytes, network = networks.default):
+        pair       = utils.encoding.sec_to_public_pair(bytes)
         compressed = utils.encoding.is_sec_compressed(bytes)
-        return PublicKey(point, network, compressed)
+
+        return PublicKey(pair, network, compressed)
 
     @staticmethod
-    def fromHex(hex, network = networks.default):
-        bytes = binascii.unhexlify(hex)
-        return PublicKey.fromBytes(bytes, network)
+    def from_hex(hex, network = networks.default):
+        return PublicKey.from_bytes(binascii.unhexlify(hex), network)
 
-    def toBytes(self):
-        return utils.encoding.public_pair_to_sec(self.point, self.compressed)
+    def to_bytes(self):
+        return utils.encoding.public_pair_to_sec(self.pair, self.compressed)
 
-    def toHex(self):
-        return binascii.hexlify(self.toBytes())
+    def to_hex(self):
+        return binascii.hexlify(self.to_bytes())
 
-    # TODO: properties?
-    @property
-    def address(self):
-        return Address.fromPublicKey(self)
+    def to_address(self):
+        return Address.from_public_key(self)
 
     def __repr__(self):
-        return "<PublicKey: %s, network: %s>" % (self.toHex(), self.network.name)
+        return "<PublicKey: %s, network: %s>" % (self.to_hex(), self.network.name)
