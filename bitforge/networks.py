@@ -69,7 +69,7 @@ def find(data, attr = 'name'):
 
     try:
       for network in _networks:
-        if getattr(network, attr) is data:
+        if getattr(network, attr) == data:
           return network
 
     except AttributeError:
