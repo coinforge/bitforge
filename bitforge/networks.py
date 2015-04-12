@@ -12,8 +12,8 @@ Network = namedtuple('Network', [
     'pubkeyhash',
     'wif_prefix',
     'scripthash',
-    'xpubkey',
-    'xprivkey',
+    'hd_public_key',
+    'hd_private_key',
     'magic',
 
     'port',
@@ -27,8 +27,8 @@ testnet = Network(
     pubkeyhash = 111,
     wif_prefix = 239,
     scripthash = 196,
-    xpubkey    = 0x043587cf,
-    xprivkey   = 0x04358394,
+    hd_public_key   = 0x043587cf,
+    hd_private_key  = 0x04358394,
     magic      = 0x0b110907,
 
     port  = 18333,
@@ -46,8 +46,8 @@ default = livenet = Network(
   pubkeyhash = 0x00,
   wif_prefix = 0x80,
   scripthash = 0x05,
-  xpubkey    =  0x0488b21e,
-  xprivkey   = 0x0488ade4,
+  hd_public_key    =  0x0488b21e,
+  hd_private_key   = 0x0488ade4,
   magic      = 0xf9beb4d9,
 
   port  = 8333,

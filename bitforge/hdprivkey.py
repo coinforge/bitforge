@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-import os, hmac, hashlib, ecdsa, utils, networks
+import os, hmac, hashlib, collections
+import ecdsa, utils, networks
 from privkey import PrivateKey
+from utils.intbytes import int_from_bytes, int_to_bytes, to_bytes
 
 # TODO: should be in networks.py
 # TODO: check which of these are network dependent
@@ -9,16 +11,14 @@ HMAC_MAGIC_KEY   = 'Bitcoin seed'
 ROOT_FINGERPRINT = '\0\0\0\0'
 
 
-# TODO: use _ instead of methodNames
-# TODO: extend named tuple
-class HDPrivateKey(object):
-    # Oh java
-    def __init__(self, secret, chain, depth = 0, index = 0, parent = ROOT_FINGERPRINT, network = networks.default):
-        self.secret = secret
-        self.chain  = chain
-        self.depth  = depth
-        self.index  = index
-        self.parent = parent
+BaseHDPrivateKey = collections.namedtuple('HDPrivateKey', 
+    ['secret', 'chain', 'depth', 'index', 'parent', 'network']
+)
+
+class HDPrivateKey(BaseHDPrivateKey):
+    def __new__(cls, secret, chain, depth = 0, index = 0, parent = ROOT_FINGERPRINT, network = networks.default):
+
+        return super(HDPrivateKey, cls).__new__(cls, secret, chain, depth, index, parent, network)
 
     @staticmethod
     def fromSeed(seed = None):
@@ -34,32 +34,41 @@ class HDPrivateKey(object):
 
     # TODO: massage this
     @staticmethod
-    def fromString(b58_str):
-        data = utils.encoding.a2b_hashed_base58(b58_str)
-        buffers = {
-            'version' : data[HDPrivateKey.VersionStart:HDPrivateKey.VersionEnd],
-            'depth'   : data[HDPrivateKey.DepthStart:HDPrivateKey.DepthEnd],
-            'parent'  : data[HDPrivateKey.ParentFingerPrintStart:HDPrivateKey.ParentFingerPrintEnd],
-            'index'   : data[HDPrivateKey.ChildIndexStart:HDPrivateKey.ChildIndexEnd],
-            'chain'   : data[HDPrivateKey.ChainCodeStart:HDPrivateKey.ChainCodeEnd],
-            'secret'  : data[HDPrivateKey.PrivateKeyStart:HDPrivateKey.PrivateKeyEnd],
-            'checksum': data[HDPrivateKey.ChecksumStart:HDPrivateKey.ChecksumEnd],
-            'xprivkey': b58_str,
-        }
-        return buffers
+    def from_string(b58_str):
+        data = utils.encoding.a2b_hashed_base58(b58_str) # TODO checksum?
 
-    @staticmethod
-    def _fromBuffers(buffers):
-        version = utils.intbytes.from_bytes(buff['version'])
-        network = networks.find(version, 'xprivkey')
+        secret = data[HDPrivateKey.PrivateKeyStart : HDPrivateKey.PrivateKeyEnd]
+        chain  = data[HDPrivateKey.ChainCodeStart : HDPrivateKey.ChainCodeEnd]
+        depth  = int_from_bytes(data[HDPrivateKey.DepthStart : HDPrivateKey.DepthEnd])
+        index  = int_from_bytes(data[HDPrivateKey.ChildIndexStart : HDPrivateKey.ChildIndexEnd])
+        parent = int_from_bytes(data[HDPrivateKey.ParentFingerPrintStart : HDPrivateKey.ParentFingerPrintEnd])
 
+        # The version field is used to deduce the network:
+        version = int_from_bytes(data[HDPrivateKey.VersionStart:HDPrivateKey.VersionEnd])
+        network = networks.find(version, 'hd_private_key')
+
+        return HDPrivateKey(secret, chain, depth, index, parent, network)
+
+
+    def toString(self):
+        # just like in the bip: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+        bytes = (""
+            + to_bytes(self.network.hd_private_key, length = 4)
+            + to_bytes(self.depth, length = 1)
+            + to_bytes(self.parent, length = 4)
+            + to_bytes(self.index, length = 4)
+            + self.chain
+            + '\0' # this zero is prepended to the secret for private keys.
+                   # HDPublicKey puts no zero. 
+            + self.secret
+        )
+
+        return utils.encoding.b2a_hashed_base58(bytes)
 
     def toPrivateKey(self):
         ecdsa_key = ecdsa.SigningKey.from_string(self.secret, curve = ecdsa.curves.SECP256k1)
         return PrivateKey(ecdsa_key.privkey.secret_multiplier)
 
-    def __str__(self):
-        pass
 
 # with Tebex as tibi:
 HDPrivateKey.VersionSize = 4;
@@ -93,6 +102,5 @@ HDPrivateKey.ChecksumEnd = HDPrivateKey.ChecksumStart + HDPrivateKey.CheckSumSiz
 # Derive
 # xpriv -> xpub
 
-buff = HDPrivateKey.fromString('xprv9s21ZrQH143K39tCKhmgNQSCD2hdBstf6rGgdnjU7NeFmTRfEaX1h2PXv9WpXhp8DdMztKdSm6Du89VWyCxRCMcSrgswxSDk1VY49dVnSyR')
-version = utils.intbytes.from_bytes(buff['version'])
-print networks.find(version, 'xprivkey')
+# hdkey = HDPrivateKey.from_string('xprv9s21ZrQH143K39tCKhmgNQSCD2hdBstf6rGgdnjU7NeFmTRfEaX1h2PXv9WpXhp8DdMztKdSm6Du89VWyCxRCMcSrgswxSDk1VY49dVnSyR')
+# print hdkey.toString()
