@@ -9,11 +9,11 @@ class Opcode(Enum):
         return getattr(Opcode, name)
 
     @staticmethod
-    @from_int(n):
+    def from_int(n):
         if 0 <= n <= 16:
             return Opcode.OP_0 if n == 0 else Opcode(Opcode.OP_1.value + n - 1)
 
-        else
+        else:
             raise ValueError("Expected number in range [0, 16], got %d" % n)
 
     def is_push(self):
