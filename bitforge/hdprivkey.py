@@ -2,13 +2,14 @@
 import os, hmac, hashlib, collections
 import ecdsa, utils, networks
 from privkey import PrivateKey
+from hdpubkey import HDPublicKey
 from utils.intbytes import int_from_bytes, int_to_bytes, to_bytes
 
 # TODO: should be in networks.py
 # TODO: check which of these are network dependent
 MIN_SEED_LEN     = 32
 HMAC_MAGIC_KEY   = 'Bitcoin seed'
-ROOT_FINGERPRINT = '\0\0\0\0'
+ROOT_FINGERPRINT = 0
 HARDENED_START   = 0x80000000
 
 
@@ -23,7 +24,7 @@ BaseHDPrivateKey = collections.namedtuple('HDPrivateKey',
 class HDPrivateKey(BaseHDPrivateKey):
     def __new__(cls, privkey, chain, depth = 0, index = 0, parent = ROOT_FINGERPRINT, network = networks.default):
         assert isinstance(privkey, PrivateKey)
-        fingerprint = calculate_fingerprint(privkey)
+        fingerprint = int_from_bytes(calculate_fingerprint(privkey))
 
         return super(HDPrivateKey, cls).__new__(cls, privkey, chain, depth, index, parent, network, fingerprint)
 
@@ -44,7 +45,6 @@ class HDPrivateKey(BaseHDPrivateKey):
     def from_string(b58_str):
         data = utils.encoding.a2b_hashed_base58(b58_str) # TODO checksum?
 
-        privkey = PrivateKey.from_bytes(data[HDPrivateKey.PrivateKeyStart : HDPrivateKey.PrivateKeyEnd])
         chain   = data[HDPrivateKey.ChainCodeStart : HDPrivateKey.ChainCodeEnd]
         depth   = int_from_bytes(data[HDPrivateKey.DepthStart : HDPrivateKey.DepthEnd])
         index   = int_from_bytes(data[HDPrivateKey.ChildIndexStart : HDPrivateKey.ChildIndexEnd])
@@ -53,6 +53,7 @@ class HDPrivateKey(BaseHDPrivateKey):
         # The version field is used to deduce the network:
         version = int_from_bytes(data[HDPrivateKey.VersionStart:HDPrivateKey.VersionEnd])
         network = networks.find(version, 'hd_private_key')
+        privkey = PrivateKey.from_bytes(data[HDPrivateKey.PrivateKeyStart : HDPrivateKey.PrivateKeyEnd], network)
 
         return HDPrivateKey(privkey, chain, depth, index, parent, network)
 
@@ -62,10 +63,10 @@ class HDPrivateKey(BaseHDPrivateKey):
         bytes = (""
             + to_bytes(self.network.hd_private_key, length = 4)
             + to_bytes(self.depth, length = 1)
-            + self.parent
+            + to_bytes(self.parent, length = 4)
             + to_bytes(self.index, length = 4)
             + self.chain
-            + '\0' # this zero is prepended to private keys. HDPublicKey doesn't do it 
+            + '\0' # this zero is prepended to private keys. HDPublicKey doesn't do it
             + self.to_private_key().to_bytes()
         )
 
@@ -89,13 +90,15 @@ class HDPrivateKey(BaseHDPrivateKey):
             hashlib.sha512
         ).digest()
 
-        
         seed    = (int_from_bytes(signed64[:32]) + self.to_private_key().seed) % utils.generator_secp256k1.order()
-        privkey = PrivateKey(seed)
+        privkey = PrivateKey(seed, self.network)
         chain   = signed64[32:]
         depth   = self.depth + 1
 
         return HDPrivateKey(privkey, chain, depth, index, self.fingerprint, self.network)
+
+    def to_hd_public_key(self):
+        return HDPublicKey.from_hd_private_key(self)
 
     def to_private_key(self):
         return self.privkey
@@ -129,12 +132,3 @@ HDPrivateKey.PrivateKeyStart = HDPrivateKey.ChainCodeEnd + 1;
 HDPrivateKey.PrivateKeyEnd = HDPrivateKey.PrivateKeyStart + HDPrivateKey.PrivateKeySize;
 HDPrivateKey.ChecksumStart = HDPrivateKey.PrivateKeyEnd;
 HDPrivateKey.ChecksumEnd = HDPrivateKey.ChecksumStart + HDPrivateKey.CheckSumSize;
-
-
-# Create randonm privatekey
-# Derive
-# xpriv -> xpub
-
-hdkey = HDPrivateKey.from_string('xprv9s21ZrQH143K39tCKhmgNQSCD2hdBstf6rGgdnjU7NeFmTRfEaX1h2PXv9WpXhp8DdMztKdSm6Du89VWyCxRCMcSrgswxSDk1VY49dVnSyR')
-derived = hdkey.derive(0)
-print derived.to_string()
