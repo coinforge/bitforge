@@ -1,7 +1,7 @@
 import binascii, collections
 import networks, utils
 from enum import Enum
-from script import Script
+# from script import Script
 
 # TODO: add validations to EVERYTHING!!!!!
 # TODO: s/hash/something

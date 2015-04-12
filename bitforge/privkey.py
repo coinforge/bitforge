@@ -2,7 +2,7 @@ import random, struct, binascii, collections
 import networks, utils
 from pubkey import PublicKey
 from address import Address
-
+from utils.intbytes import int_from_bytes
 
 rng     = random.SystemRandom()
 KEY_MAX = utils.generator_secp256k1.order()
@@ -37,6 +37,10 @@ class PrivateKey(BasePrivateKey):
         seed = utils.encoding.from_bytes_32(data[1:])
 
         return PrivateKey(seed, network, compressed)
+
+    @staticmethod
+    def from_bytes(bytes, network = networks.default, compressed = True):
+        return PrivateKey(int_from_bytes(bytes), network, compressed)
 
     def to_wif(self):
         bytes = chr(self.network.wif_prefix) + self.to_bytes()
