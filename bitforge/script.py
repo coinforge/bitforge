@@ -4,6 +4,7 @@ from opcode import Opcode
 from pubkey import PublicKey
 from utils.intbytes import int_to_bytes
 
+# TODO: s/chunk/Instruction/???
 class Chunk(object):
     def __init__(self, opcode, length = None, bytes = None):
         self.opcode = opcode
@@ -16,6 +17,7 @@ class Chunk(object):
 
         return int_to_bytes(self.length) + self.bytes
 
+    # TODO: s/__str__/to string, code, asm, etc
     def __str__(self):
         if not self.bytes:
             return self.opcode.name
@@ -32,20 +34,22 @@ class Chunk(object):
         return '<Chunk: %s %s %s>' % (self.opcode, self.length, self.bytes)
 
 
+# TODO: caress it a little bit
 class Script(object):
 
     def __init__(self):
         self.chunks = []
 
+    # TODO from script, from code, etc...
     @staticmethod
     def fromString(string):
         script = Script()
-        tokens = string.split(' ')
+        tokens = string.split(' ') # TODO: split()
 
         i = 0
         while i < len(tokens):
+            # TODO: check invalid, check empty!
             opcode = Opcode.fromString(tokens[i])
-            # TODO: handle unreconized opcodes
             if opcode in [Opcode.OP_PUSHDATA1, Opcode.OP_PUSHDATA2, Opcode.OP_PUSHDATA4]:
                 chunk = Chunk(opcode, int(tokens[i + 1]), tokens[i + 2])
                 script.chunks.append(chunk)
@@ -56,6 +60,9 @@ class Script(object):
 
         return script
 
+    # TODO: add _ (private methods) wherever necessary
+    # TODO: functionize it all!
+    # TODO: naming fromBLEBLE
     @staticmethod
     def buildScriptHashOut(address):
         script = Script()
@@ -64,6 +71,7 @@ class Script(object):
         script.add(Opcode.OP_EQUAL)
         return script
 
+    # TODO: naming
     @staticmethod
     def buildMultisigOut(pubkeys, thershold, sort = True):
         if thershold > len(pubkeys):
@@ -82,6 +90,7 @@ class Script(object):
         return script
 
 
+    # TODO: naming?
     def isPubkeyHashOut(self):
         return self.chunks.length is 5 and \
                self.chunks[0].opcode is Opcode.OP_DUP and \
@@ -103,6 +112,7 @@ class Script(object):
             raise ValueError('Can\'t retrieve PublicKeyHash from a non-PKH output')
         return self.chunks[2].bytes
 
+    # TODO: wooooot (_ maybe)
     def add(self, data):
         if isinstance(data, Opcode):
             self.addOpcode(data)
@@ -113,6 +123,8 @@ class Script(object):
     def addOpcode(self, opcode):
         self.chunks.append(Chunk(opcode))
 
+    # TODO: s/app/append,push
+    # TODO: kpooooow ** 2
     def addBytes(self, bytes):
         length = len(bytes)
         if 0 < length < Opcode.OP_PUSHDATA1.value:
@@ -131,6 +143,7 @@ class Script(object):
     def toBytes(self):
         return ''.join(map(Chunk.toBytes, self.chunks))
 
+    # TODO: to algo
     def __str__(self):
         return ' '.join(map(str, self.chunks))
 

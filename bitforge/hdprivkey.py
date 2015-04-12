@@ -2,12 +2,17 @@
 import os, hmac, hashlib, ecdsa, utils, networks
 from privkey import PrivateKey
 
+# TODO: should be in networks.py
+# TODO: check which of these are network dependent
 MIN_SEED_LEN     = 32
 HMAC_MAGIC_KEY   = 'Bitcoin seed'
 ROOT_FINGERPRINT = '\0\0\0\0'
 
 
+# TODO: use _ instead of methodNames
+# TODO: extend named tuple
 class HDPrivateKey(object):
+    # Oh java
     def __init__(self, secret, chain, depth = 0, index = 0, parent = ROOT_FINGERPRINT, network = networks.default):
         self.secret = secret
         self.chain  = chain
@@ -27,6 +32,7 @@ class HDPrivateKey(object):
 
         return HDPrivateKey(secret = signed64[:32], chain = signed64[32:])
 
+    # TODO: massage this
     @staticmethod
     def fromString(b58_str):
         data = utils.encoding.a2b_hashed_base58(b58_str)
@@ -55,6 +61,7 @@ class HDPrivateKey(object):
     def __str__(self):
         pass
 
+# with Tebex as tibi:
 HDPrivateKey.VersionSize = 4;
 HDPrivateKey.DepthSize = 1;
 HDPrivateKey.ParentFingerPrintSize = 4;

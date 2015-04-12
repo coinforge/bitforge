@@ -20,6 +20,9 @@ from address import Address
 BasePublicKey = collections.namedtuple('PublicKey', ['point', 'network', 'compressed'])
 
 class PublicKey(BasePublicKey):
+    # TODO: compressed to method???
+    # TODO: point -> pair
+    # TODO: check arguments: consistent across constructors, naming, arguments
     def __new__(cls, point, network = networks.default, compressed = True):
         network = networks.find(network)
 
@@ -49,6 +52,7 @@ class PublicKey(BasePublicKey):
     def toHex(self):
         return binascii.hexlify(self.toBytes())
 
+    # TODO: properties?
     @property
     def address(self):
         return Address.fromPublicKey(self)

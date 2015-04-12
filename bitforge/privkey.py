@@ -27,6 +27,8 @@ def randomKeyNumber():
     return rng.randint(1, KEY_MAX - 1)
 
 
+# TODO: number -> sid
+# TODO: compress in methods instead of constructor???
 BasePrivateKey = collections.namedtuple('PrivateKey', ['number', 'network', 'compressed'])
 
 class PrivateKey(BasePrivateKey):
@@ -49,6 +51,7 @@ class PrivateKey(BasePrivateKey):
     #
     #     return PrivateKey(number, network)
 
+    # TODO: add inverse factories fromBytes, fromHex
     @staticmethod
     def fromWIF(wif):
         data = utils.encoding.a2b_hashed_base58(wif)
@@ -75,6 +78,8 @@ class PrivateKey(BasePrivateKey):
 
         return utils.encoding.b2a_hashed_base58(bytes)
 
+    # TODO: property -> method
+    # TODO: reciprocal names from/to
     @property
     def publickey(self):
         return PublicKey.fromPrivateKey(self)
