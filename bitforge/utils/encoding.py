@@ -235,7 +235,8 @@ def sec_to_public_pair(sec):
     sec0 = sec[:1]
     if sec0 == b'\4':
         y = from_bytes_32(sec[33:65])
-        from ecdsa import generator_secp256k1, is_public_pair_valid
+        from ecdsa import is_public_pair_valid
+        from secp256k1 import generator_secp256k1
         public_pair = (x, y)
         # verify this is on the curve
         if not is_public_pair_valid(generator_secp256k1, public_pair):
