@@ -42,6 +42,11 @@ class PrivateKey(BasePrivateKey):
     def from_bytes(bytes, network = networks.default, compressed = True):
         return PrivateKey(int_from_bytes(bytes), network, compressed)
 
+    @staticmethod
+    def from_hex(hexstr, network = networks.default, compressed = True):
+        bytes = binascii.unhexlify(hexstr)
+        return PrivateKey.from_bytes(bytes, network, compressed)
+
     def to_wif(self):
         bytes = chr(self.network.wif_prefix) + self.to_bytes()
 

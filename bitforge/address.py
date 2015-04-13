@@ -24,7 +24,7 @@ class Address(BaseAddress):
     def from_public_key(pubkey):
         raw = utils.encoding.hash160(pubkey.to_bytes())
 
-        return Address(raw, pubkey.network, Address.Type.PublicKeyHash)
+        return Address(raw, pubkey.network, Address.Type.PublicKey)
 
     # TODO: all keys should be from the same network
     @staticmethod
@@ -41,7 +41,7 @@ class Address(BaseAddress):
 
         return Address(
             raw     = utils.encoding.hash160(script.to_bytes()),
-            type    = Address.Type.ScriptHash,
+            type    = Address.Type.Script,
             network = network
         )
 
@@ -51,4 +51,4 @@ class Address(BaseAddress):
         return utils.encoding.hash160_sec_to_bitcoin_address(self.raw, chr(prefix))
 
     def __repr__(self):
-        return "<Address: %s, type: %s, network: %s>" % (str(self), self.type.name, self.network.name)
+        return "<Address: %s, type: %s, network: %s>" % (self.to_string(), self.type.name, self.network.name)
