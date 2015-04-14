@@ -4,7 +4,7 @@ from opcode import Opcode
 from pubkey import PublicKey
 from utils.intbytes import int_to_bytes
 
-class Chunk(object):
+class Instruction(object):
     def __init__(self, opcode, length = None, bytes = None):
         self.opcode = opcode
         self.length = length
@@ -29,16 +29,16 @@ class Chunk(object):
 
 
     def __repr__(self):
-        return '<Chunk: %s %s %s>' % (self.opcode, self.length, self.bytes)
+        return '<Instruction: %s %s %s>' % (self.opcode, self.length, self.bytes)
 
 
 class Script(object):
 
     def __init__(self):
-        self.chunks = []
+        self.instructions = []
 
     @staticmethod
-    def fromString(string):
+    def from_string(string):
         script = Script()
         tokens = string.split(' ')
 
@@ -47,11 +47,11 @@ class Script(object):
             opcode = Opcode.from_name(tokens[i])
             # TODO: handle unreconized opcodes
             if opcode in [Opcode.OP_PUSHDATA1, Opcode.OP_PUSHDATA2, Opcode.OP_PUSHDATA4]:
-                chunk = Chunk(opcode, int(tokens[i + 1]), tokens[i + 2])
-                script.chunks.append(chunk)
+                inst = Instruction(opcode, int(tokens[i + 1]), tokens[i + 2])
+                script.instructions.append(inst)
                 i += 3
             else:
-                script.chunks.append(opcode)
+                script.instructions.append(opcode)
                 i += 1
 
         return script
@@ -83,25 +83,25 @@ class Script(object):
 
 
     def isPubkeyHashOut(self):
-        return self.chunks.length is 5 and \
-               self.chunks[0].opcode is Opcode.OP_DUP and \
-               self.chunks[1].opcode is Opcode.OP_HASH160 and \
-               self.chunks[2].bytes and \
-               self.chunks[2].length is 20 and \
-               self.chunks[3].opcode is Opcode.OP_EQUALVERIFY and \
-               self.chunks[4].opcode is Opcode.OP_CHECKSIG
+        return self.instructions.length is 5 and \
+               self.instructions[0].opcode is Opcode.OP_DUP and \
+               self.instructions[1].opcode is Opcode.OP_HASH160 and \
+               self.instructions[2].bytes and \
+               self.instructions[2].length is 20 and \
+               self.instructions[3].opcode is Opcode.OP_EQUALVERIFY and \
+               self.instructions[4].opcode is Opcode.OP_CHECKSIG
 
     def isPublicKeyHashIn(self):
-        return self.chunks.length is 2 and \
-               self.chunks[0].bytes and \
-               self.chunks[0].length >= 0x47 and \
-               self.chunks[0].length <= 0x49 and \
-               PublicKey.is_valid(self.chunks[1].bytes)
+        return self.instructions.length is 2 and \
+               self.instructions[0].bytes and \
+               self.instructions[0].length >= 0x47 and \
+               self.instructions[0].length <= 0x49 and \
+               PublicKey.is_valid(self.instructions[1].bytes)
 
     def getPublicKeyHash(self):
         if not self.getPublicKeyHash():
             raise ValueError('Can\'t retrieve PublicKeyHash from a non-PKH output')
-        return self.chunks[2].bytes
+        return self.instructions[2].bytes
 
     def add(self, data):
         if isinstance(data, Opcode):
@@ -111,7 +111,7 @@ class Script(object):
         return self
 
     def addOpcode(self, opcode):
-        self.chunks.append(Chunk(opcode))
+        self.instructions.append(Instruction(opcode))
 
     def addBytes(self, bytes):
         length = len(bytes)
@@ -126,13 +126,13 @@ class Script(object):
         else:
             raise ValueError('You can\'t push that much data')
 
-        self.chunks.append(Chunk(opcode, length, bytes))
+        self.instructions.append(Instruction(opcode, length, bytes))
 
-    def toBytes(self):
-        return ''.join(map(Chunk.toBytes, self.chunks))
+    def to_bytes(self):
+        return ''.join(map(Instruction.toBytes, self.instructions))
 
-    def __str__(self):
-        return ' '.join(map(str, self.chunks))
+    def to_string(self):
+        return ' '.join(map(str, self.instructions))
 
     def __repr__(self):
-        return "<Script: %s>" % str(self)
+        return "<Script: %s>" % self.to_string()
