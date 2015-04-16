@@ -26,7 +26,7 @@ data = {
 class TestPrivateKey:
     def test_from_random(self):
         k1, k2 = PrivateKey(), PrivateKey()
-        assert k1.seed is not k2.seed
+        assert k1.secret != k2.secret
 
     def test_from_hex(self):
         k = PrivateKey.from_hex(data['privkey_hex'])
@@ -51,6 +51,8 @@ class TestPrivateKey:
 
         assert k.compressed is True
         assert k.network is bitforge.networks.livenet
+        print repr(k.to_wif())
+        print repr(data['wif']['live_compress'])
         assert k.to_wif() == data['wif']['live_compress']
 
     def test_from_wif_test_compress(self):

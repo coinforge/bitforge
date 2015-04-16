@@ -18,7 +18,7 @@ class PublicKey(BasePublicKey):
     @staticmethod
     def from_private_key(privkey):
         pair = utils.public_pair_for_secret_exponent(
-            utils.generator_secp256k1, privkey.seed
+            utils.generator_secp256k1, privkey.secret
         )
 
         return PublicKey(pair, privkey.network, privkey.compressed)

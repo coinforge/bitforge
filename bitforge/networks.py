@@ -2,9 +2,6 @@ import sys
 from collections import namedtuple
 
 
-class UnknownNetwork(Exception):
-    pass
-
 # Network objects are immutable, and should be unique
 Network = namedtuple('Network', [
     'name',
@@ -63,16 +60,16 @@ default = livenet = Network(
 
 _networks = [livenet, testnet]
 
-def find(data, attr = 'name'):
-    if isinstance(data, Network):
-        return data
+def find(value, attr = 'name'):
+    if isinstance(value, Network):
+        return value
 
     try:
       for network in _networks:
-        if getattr(network, attr) == data:
+        if getattr(network, attr) == value:
           return network
 
     except AttributeError:
-      pass
-    
-    raise UnknownNetwork(data)
+      pass # networks don't have this attribute!
+
+    raise UnknownNetwork(attr, value)

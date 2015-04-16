@@ -1,46 +1,59 @@
 import random, struct, binascii, collections
-import networks, utils
+import networks, utils, error
 from pubkey import PublicKey
 from address import Address
-from utils.intbytes import int_from_bytes
+from encoding import *
+
 
 rng     = random.SystemRandom()
 KEY_MAX = utils.generator_secp256k1.order()
 
-def random_seed():
+def random_secret():
     return rng.randint(1, KEY_MAX - 1)
 
 
-# TODO: compress in methods instead of constructor???
 BasePrivateKey = collections.namedtuple('PrivateKey',
-    ['seed', 'network', 'compressed']
+    ['secret', 'network', 'compressed']
 )
 
 class PrivateKey(BasePrivateKey):
-    def __new__(cls, seed = None, network = networks.default, compressed = True):
-        network = networks.find(network)
+    def __new__(cls, secret = None, network = networks.default, compressed = True):
+        network = networks.find(network) # may throw UnknownNetwork
 
-        if seed is None:
-            seed = random_seed()
+        if secret is None:
+            secret = random_secret()
 
-        return super(PrivateKey, cls).__new__(cls, seed, network, compressed)
+        if not (0 < secret < KEY_MAX):
+            raise error.InvalidSecret(secret)
+
+        return super(PrivateKey, cls).__new__(cls, secret, network, compressed)
 
     @staticmethod
-    def from_wif(wif):
-        data    = utils.encoding.a2b_hashed_base58(wif)
-        network = networks.find(ord(data[0]), 'wif_prefix')
+    def from_wif(string):
+        bytes = decode_base58h(string)
 
-        compressed = len(data) > 33
-        if compressed:
-            data = data[:-1]
+        if len(bytes) == 33:
+            compressed = False
 
-        seed = utils.encoding.from_bytes_32(data[1:])
+        elif len(bytes) == 34:
+            if bytes[-1] != '\1':
+                raise error.InvalidCompressionByte(string)
 
-        return PrivateKey(seed, network, compressed)
+            bytes = bytes[:-1]
+            compressed = True
+
+        else:
+            raise error.InvalidKeyLength(bytes)
+
+        network = networks.find(ord(bytes[0]), 'wif_prefix')
+        secret  = decode_int(bytes[1:])
+
+        return PrivateKey(secret, network, compressed)
 
     @staticmethod
     def from_bytes(bytes, network = networks.default, compressed = True):
-        return PrivateKey(int_from_bytes(bytes), network, compressed)
+        secret = decode_int(bytes)
+        return PrivateKey(secret, network, compressed)
 
     @staticmethod
     def from_hex(hexstr, network = networks.default, compressed = True):
@@ -48,16 +61,14 @@ class PrivateKey(BasePrivateKey):
         return PrivateKey.from_bytes(bytes, network, compressed)
 
     def to_wif(self):
-        bytes = chr(self.network.wif_prefix) + self.to_bytes()
+        network_byte    = chr(self.network.wif_prefix)
+        secret_bytes    = self.to_bytes()
+        compressed_byte = '\1' if self.compressed else ''
 
-        if self.compressed:
-            bytes += '\1'
+        return encode_base58h(network_byte + secret_bytes + compressed_byte)
 
-        return utils.encoding.b2a_hashed_base58(bytes)
-
-    # TODO: add converse factories from_bytes, from_hex
     def to_bytes(self):
-        return utils.encoding.to_bytes_32(self.seed)
+        return encode_int(self.secret)
 
     def to_hex(self):
         return binascii.hexlify(self.to_bytes())
