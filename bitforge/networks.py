@@ -1,5 +1,6 @@
 import sys
 from collections import namedtuple
+import error
 
 
 # Network objects are immutable, and should be unique
@@ -72,4 +73,4 @@ def find(value, attr = 'name'):
     except AttributeError:
       pass # networks don't have this attribute!
 
-    raise UnknownNetwork(attr, value)
+    raise error.UnknownNetwork(attr, value)

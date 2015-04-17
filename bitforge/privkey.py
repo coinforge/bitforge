@@ -43,7 +43,7 @@ class PrivateKey(BasePrivateKey):
             compressed = True
 
         else:
-            raise error.InvalidKeyLength(bytes)
+            raise error.InvalidWifLength(bytes)
 
         network = networks.find(ord(bytes[0]), 'wif_prefix')
         secret  = decode_int(bytes[1:])
@@ -52,12 +52,15 @@ class PrivateKey(BasePrivateKey):
 
     @staticmethod
     def from_bytes(bytes, network = networks.default, compressed = True):
+        if len(bytes) != 32:
+            raise error.InvalidSecretLength(bytes)
+
         secret = decode_int(bytes)
         return PrivateKey(secret, network, compressed)
 
     @staticmethod
-    def from_hex(hexstr, network = networks.default, compressed = True):
-        bytes = binascii.unhexlify(hexstr)
+    def from_hex(string, network = networks.default, compressed = True):
+        bytes = decode_hex(string)
         return PrivateKey.from_bytes(bytes, network, compressed)
 
     def to_wif(self):
@@ -71,7 +74,7 @@ class PrivateKey(BasePrivateKey):
         return encode_int(self.secret)
 
     def to_hex(self):
-        return binascii.hexlify(self.to_bytes())
+        return encode_hex(self.to_bytes())
 
     def to_public_key(self):
         return PublicKey.from_private_key(self)
