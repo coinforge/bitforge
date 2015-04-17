@@ -1,6 +1,10 @@
 import sys
 from collections import namedtuple
-import error
+from errors import KeyValueError
+
+
+class UnknownNetwork(KeyValueError):
+    "No network with an attribute '{key}' of value {value}"
 
 
 # Network objects are immutable, and should be unique
@@ -61,7 +65,7 @@ default = livenet = Network(
 
 _networks = [livenet, testnet]
 
-def find(value, attr = 'name'):
+def find(value, attr = 'name', exception = UnknownNetwork):
     if isinstance(value, Network):
         return value
 
@@ -73,4 +77,5 @@ def find(value, attr = 'name'):
     except AttributeError:
       pass # networks don't have this attribute!
 
-    raise error.UnknownNetwork(attr, value)
+    print exception
+    raise exception(attr, value)

@@ -2,7 +2,6 @@ import json
 from pytest import raises, fixture, fail
 
 from bitforge import networks
-from bitforge.error import *
 from bitforge.encoding import *
 from bitforge.privkey import PrivateKey
 
@@ -48,13 +47,13 @@ class TestPrivateKey:
 
 
     def test_invalid_secret(self):
-        with raises(InvalidSecret): PrivateKey(-1)
-        with raises(InvalidSecret): PrivateKey(10 ** 100)
+        with raises(PrivateKey.InvalidSecret): PrivateKey(-1)
+        with raises(PrivateKey.InvalidSecret): PrivateKey(10 ** 100)
 
 
     def test_invalid_network(self):
-        with raises(UnknownNetwork):
-         networks.find(-1)
+        with raises(PrivateKey.UnknownNetwork):
+            PrivateKey(network = -1)
 
 
     def test_from_hex(self):
@@ -83,8 +82,8 @@ class TestPrivateKey:
 
 
     def test_from_invalid_bytes(self):
-        with raises(InvalidSecretLength): PrivateKey.from_bytes('a')
-        with raises(InvalidSecretLength): PrivateKey.from_bytes('a' * 33)
+        with raises(PrivateKey.InvalidSecretLength): PrivateKey.from_bytes('a')
+        with raises(PrivateKey.InvalidSecretLength): PrivateKey.from_bytes('a' * 33)
 
 
     def test_from_wif_live_compress(self):
@@ -123,15 +122,15 @@ class TestPrivateKey:
         too_short = encode_base58h('a')
         too_long  = encode_base58h('a' * 30)
 
-        with raises(InvalidWifLength): PrivateKey.from_wif(too_short)
-        with raises(InvalidWifLength): PrivateKey.from_wif(too_long)
+        with raises(PrivateKey.InvalidWifLength): PrivateKey.from_wif(too_short)
+        with raises(PrivateKey.InvalidWifLength): PrivateKey.from_wif(too_long)
 
         valid = decode_base58h(PrivateKey().to_wif())
 
-        with raises(InvalidCompressionByte):
+        with raises(PrivateKey.InvalidCompressionByte):
             PrivateKey.from_wif(encode_base58h(valid[:-1] + 'a'))
 
-        with raises(UnknownNetwork):
+        with raises(PrivateKey.UnknownNetwork):
             PrivateKey.from_wif(encode_base58h('a' + valid[1:]))
 
 
@@ -153,10 +152,11 @@ class TestPrivateKey:
             try:
                 PrivateKey.from_wif(invalid_wif)
 
-            except (InvalidBase58h, PrivateKeyError):
+            except (InvalidBase58h, PrivateKey.Error):
                 continue
 
             fail("Invalid WIF {0} raised no Exception", invalid_wif)
+
 
     def test_to_pubkey_compress(self):
         k = PrivateKey.from_wif(data['wif']['live_compress'])

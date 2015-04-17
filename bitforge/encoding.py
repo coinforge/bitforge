@@ -1,5 +1,13 @@
 import utils, binascii
-import error
+from errors import StringError
+
+
+class InvalidBase58h(StringError):
+    "The string {string} is not valid base58/check"
+
+
+class InvalidHex(StringError):
+    "The string {string} is not valid hexadecimal"
 
 
 def encode_base58h(bytes):
@@ -11,7 +19,7 @@ def decode_base58h(string):
         return utils.encoding.a2b_hashed_base58(string)
 
     except utils.encoding.EncodingError:
-        raise error.InvalidBase58h(string)
+        raise InvalidBase58h(string)
 
 
 def encode_int(integer):
@@ -43,4 +51,4 @@ def decode_hex(string):
         return binascii.unhexlify(string)
     except:
         # unhexlify() throws 2 different exceptions (length, and alphabet)
-        raise error.InvalidHex(string)
+        raise InvalidHex(string)

@@ -1,5 +1,6 @@
 import random, struct, binascii, collections
-import networks, utils, error
+import networks, utils
+from errors import *
 from pubkey import PublicKey
 from address import Address
 from encoding import *
@@ -16,15 +17,39 @@ BasePrivateKey = collections.namedtuple('PrivateKey',
     ['secret', 'network', 'compressed']
 )
 
+
+def find_network(value, attr = 'name'):
+    return networks.find(value, attr, PrivateKey.UnknownNetwork)
+
+
 class PrivateKey(BasePrivateKey):
+    class Error(BitforgeError):
+        pass
+
+    class InvalidSecret(Error, NumberError):
+        "Invalid secret for PrivateKey: {number}"
+
+    class InvalidWifLength(Error, StringError):
+        "The WIF {string} should be 33 (uncompressed) or 34 (compressed) bytes long, not {length}"
+
+    class InvalidSecretLength(Error, StringError):
+        "The secret {string} should be 32 bytes long, not {length}"
+
+    class InvalidCompressionByte(Error, StringError):
+        "The length of the WIF {string} suggests it's compressed, but it doesn't end in '\1'"
+
+    class UnknownNetwork(Error, networks.UnknownNetwork):
+        "No network for PrivateKey with an attribute '{key}' of value {value}"
+
+
     def __new__(cls, secret = None, network = networks.default, compressed = True):
-        network = networks.find(network) # may throw UnknownNetwork
+        network = find_network(network)
 
         if secret is None:
             secret = random_secret()
 
         if not (0 < secret < KEY_MAX):
-            raise error.InvalidSecret(secret)
+            raise PrivateKey.InvalidSecret(secret)
 
         return super(PrivateKey, cls).__new__(cls, secret, network, compressed)
 
@@ -37,15 +62,15 @@ class PrivateKey(BasePrivateKey):
 
         elif len(bytes) == 34:
             if bytes[-1] != '\1':
-                raise error.InvalidCompressionByte(string)
+                raise PrivateKey.InvalidCompressionByte(string)
 
             bytes = bytes[:-1]
             compressed = True
 
         else:
-            raise error.InvalidWifLength(bytes)
+            raise PrivateKey.InvalidWifLength(bytes)
 
-        network = networks.find(ord(bytes[0]), 'wif_prefix')
+        network = find_network(ord(bytes[0]), 'wif_prefix')
         secret  = decode_int(bytes[1:])
 
         return PrivateKey(secret, network, compressed)
@@ -53,7 +78,7 @@ class PrivateKey(BasePrivateKey):
     @staticmethod
     def from_bytes(bytes, network = networks.default, compressed = True):
         if len(bytes) != 32:
-            raise error.InvalidSecretLength(bytes)
+            raise PrivateKey.InvalidSecretLength(bytes)
 
         secret = decode_int(bytes)
         return PrivateKey(secret, network, compressed)
