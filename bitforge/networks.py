@@ -65,7 +65,7 @@ default = livenet = Network(
 
 _networks = [livenet, testnet]
 
-def find(value, attr = 'name', exception = UnknownNetwork):
+def find(value, attr = 'name'):
     if isinstance(value, Network):
         return value
 
@@ -77,5 +77,4 @@ def find(value, attr = 'name', exception = UnknownNetwork):
     except AttributeError:
       pass # networks don't have this attribute!
 
-    print exception
-    raise exception(attr, value)
+    raise UnknownNetwork(attr, value)

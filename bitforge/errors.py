@@ -12,6 +12,11 @@ class BitforgeError(Exception):
         return self.message
 
 
+class ObjectError(BitforgeError):
+    def prepare(self, object):
+        self.object = object
+
+
 class StringError(BitforgeError):
     def prepare(self, string):
         self.string = repr(string)

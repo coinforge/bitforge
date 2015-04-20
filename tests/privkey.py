@@ -149,13 +149,8 @@ class TestPrivateKey:
 
     def test_bitcoind_invalid_wifs(self, invalid_wifs):
         for invalid_wif in invalid_wifs:
-            try:
+            with raises(PrivateKey.Error):
                 PrivateKey.from_wif(invalid_wif)
-
-            except (InvalidBase58h, PrivateKey.Error):
-                continue
-
-            fail("Invalid WIF {0} raised no Exception", invalid_wif)
 
 
     def test_to_pubkey_compress(self):

@@ -13,16 +13,19 @@ def random_secret():
     return rng.randint(1, KEY_MAX - 1)
 
 
+def find_network(value, attr = 'name'):
+    try:
+        return networks.find(value, attr)
+    except networks.UnknownNetwork:
+        raise PrivateKey.UnknownNetwork(attr, value)
+
+
 BasePrivateKey = collections.namedtuple('PrivateKey',
     ['secret', 'network', 'compressed']
 )
 
-
-def find_network(value, attr = 'name'):
-    return networks.find(value, attr, PrivateKey.UnknownNetwork)
-
-
 class PrivateKey(BasePrivateKey):
+
     class Error(BitforgeError):
         pass
 
@@ -41,6 +44,12 @@ class PrivateKey(BasePrivateKey):
     class UnknownNetwork(Error, networks.UnknownNetwork):
         "No network for PrivateKey with an attribute '{key}' of value {value}"
 
+    class InvalidBase58h(Error, InvalidBase58h):
+        "The PublicKey string {string} is not valid base58/check"
+
+    class InvalidHex(Error, InvalidHex):
+        "The PublicKey string {string} is not valid hexadecimal"
+
 
     def __new__(cls, secret = None, network = networks.default, compressed = True):
         network = find_network(network)
@@ -55,7 +64,10 @@ class PrivateKey(BasePrivateKey):
 
     @staticmethod
     def from_wif(string):
-        bytes = decode_base58h(string)
+        try:
+            bytes = decode_base58h(string)
+        except InvalidBase58h:
+            raise PrivateKey.InvalidBase58h(string)
 
         if len(bytes) == 33:
             compressed = False
@@ -85,7 +97,11 @@ class PrivateKey(BasePrivateKey):
 
     @staticmethod
     def from_hex(string, network = networks.default, compressed = True):
-        bytes = decode_hex(string)
+        try:
+            bytes = decode_hex(string)
+        except InvalidHex:
+            raise PrivateKey.InvalidHex(string)
+
         return PrivateKey.from_bytes(bytes, network, compressed)
 
     def to_wif(self):

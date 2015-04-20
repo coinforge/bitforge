@@ -2,11 +2,15 @@ import utils, binascii
 from errors import StringError
 
 
-class InvalidBase58h(StringError):
+class EncodingError(StringError):
+    "The string {string} is not properly encoded"
+
+
+class InvalidBase58h(EncodingError):
     "The string {string} is not valid base58/check"
 
 
-class InvalidHex(StringError):
+class InvalidHex(EncodingError):
     "The string {string} is not valid hexadecimal"
 
 
@@ -45,6 +49,7 @@ def decode_int(bytes):
 
 def encode_hex(bytes):
     return binascii.hexlify(bytes)
+
 
 def decode_hex(string):
     try:
