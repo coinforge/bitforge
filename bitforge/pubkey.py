@@ -1,8 +1,16 @@
 import collections
+from utils.secp256k1 import generator_secp256k1
 import networks, utils
 from address import Address
 from errors import *
 from encoding import *
+
+
+def find_network(value, attr = 'name'):
+    try:
+        return networks.find(value, attr)
+    except networks.UnknownNetwork:
+        raise PublicKey.UnknownNetwork(attr, value)
 
 
 BasePublicKey = collections.namedtuple('PublicKey',
@@ -17,26 +25,20 @@ class PublicKey(BasePublicKey):
     class InvalidPair(Error, ObjectError):
         "The PublicKey pair {object} is invalid (not a point of the curve)"
 
-    class InvalidWifLength(Error, StringError):
-        "The WIF {string} should be 33 (uncompressed) or 34 (compressed) bytes long, not {length}"
-
-    class InvalidSecretLength(Error, StringError):
-        "The secret {string} should be 32 bytes long, not {length}"
-
-    class InvalidCompressionByte(Error, StringError):
-        "The length of the WIF {string} suggests it's compressed, but it doesn't end in '\1'"
-
     class UnknownNetwork(Error, networks.UnknownNetwork):
         "No network for PublicKey with an attribute '{key}' of value {value}"
 
     class InvalidBinary(Error, StringError):
         "The buffer {string} is not in any recognized format"
 
+    class InvalidHex(Error, InvalidHex):
+        "The PublicKey string {string} is not valid hexadecimal"
+
 
     def __new__(cls, pair, network = networks.default, compressed = True):
-        network = networks.find(network)  # may raise UnknownNetwork
+        network = find_network(network) # may raise UnknownNetwork
 
-        if not utils.ecdsa.is_public_pair_valid(pair):
+        if not utils.ecdsa.is_public_pair_valid(generator_secp256k1, pair):
             raise PublicKey.InvalidPair(pair)
 
         return super(PublicKey, cls).__new__(cls, pair, network, compressed)
@@ -55,7 +57,7 @@ class PublicKey(BasePublicKey):
         try:
             pair       = utils.encoding.sec_to_public_pair(bytes)
             compressed = utils.encoding.is_sec_compressed(bytes)
-        except utils.encoding.EncodingError:
+        except:
             raise PublicKey.InvalidBinary(bytes)
 
         return PublicKey(pair, network, compressed)

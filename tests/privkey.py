@@ -38,9 +38,8 @@ def invalid_wifs():
         return [ item[0] for item in json.load(f) ]
 
 
-
-# TODO: Test default network properly
 class TestPrivateKey:
+    
     def test_from_random(self):
         k1, k2 = PrivateKey(), PrivateKey()
         assert k1.secret != k2.secret
@@ -82,8 +81,11 @@ class TestPrivateKey:
 
 
     def test_from_invalid_bytes(self):
-        with raises(PrivateKey.InvalidSecretLength): PrivateKey.from_bytes('a')
-        with raises(PrivateKey.InvalidSecretLength): PrivateKey.from_bytes('a' * 33)
+        with raises(PrivateKey.InvalidBinaryLength):
+            PrivateKey.from_bytes('a')
+
+        with raises(PrivateKey.InvalidBinaryLength):
+            PrivateKey.from_bytes('a' * 33)
 
 
     def test_from_wif_live_compress(self):
@@ -153,32 +155,32 @@ class TestPrivateKey:
                 PrivateKey.from_wif(invalid_wif)
 
 
-    def test_to_pubkey_compress(self):
+    def test_to_pubkey_compressed(self):
         k = PrivateKey.from_wif(data['wif']['live_compress'])
         assert k.to_public_key().to_hex() == data['pubkey']['compress_hex']
 
 
-    def test_to_pubkey_compress(self):
+    def test_to_pubkey_compressed(self):
         k = PrivateKey.from_wif(data['wif']['live_uncompress'])
         assert k.to_public_key().to_hex() == data['pubkey']['uncompress_hex']
 
 
-    def test_to_address_live_compress(self):
+    def test_to_address_live_compressed(self):
         k = PrivateKey.from_wif(data['wif']['live_compress'])
         assert k.to_address().to_string() == data['address']['live_compress']
 
 
-    def test_to_address_live_uncompress(self):
+    def test_to_address_live_uncompressed(self):
         k = PrivateKey.from_wif(data['wif']['live_uncompress'])
         assert k.to_address().to_string() == data['address']['live_uncompress']
 
 
-    def test_to_address_test_compress(self):
+    def test_to_address_test_compressed(self):
         k = PrivateKey.from_wif(data['wif']['test_compress'])
         assert k.to_address().to_string() == data['address']['test_compress']
 
 
-    def test_to_address_test_compress(self):
+    def test_to_address_test_compressed(self):
         k = PrivateKey.from_wif(data['wif']['test_uncompress'])
         assert k.to_address().to_string() == data['address']['test_uncompress']
 

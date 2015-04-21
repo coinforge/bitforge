@@ -32,23 +32,23 @@ class PrivateKey(BasePrivateKey):
     class InvalidSecret(Error, NumberError):
         "Invalid secret for PrivateKey: {number}"
 
+    class UnknownNetwork(Error, networks.UnknownNetwork):
+        "No network for PrivateKey with an attribute '{key}' of value {value}"
+
     class InvalidWifLength(Error, StringError):
         "The WIF {string} should be 33 (uncompressed) or 34 (compressed) bytes long, not {length}"
-
-    class InvalidSecretLength(Error, StringError):
-        "The secret {string} should be 32 bytes long, not {length}"
 
     class InvalidCompressionByte(Error, StringError):
         "The length of the WIF {string} suggests it's compressed, but it doesn't end in '\1'"
 
-    class UnknownNetwork(Error, networks.UnknownNetwork):
-        "No network for PrivateKey with an attribute '{key}' of value {value}"
-
     class InvalidBase58h(Error, InvalidBase58h):
-        "The PublicKey string {string} is not valid base58/check"
+        "The PrivateKey string {string} is not valid base58/check"
 
     class InvalidHex(Error, InvalidHex):
-        "The PublicKey string {string} is not valid hexadecimal"
+        "The PrivateKey string {string} is not valid hexadecimal"
+
+    class InvalidBinaryLength(Error, StringError):
+        "The binary secret {string} should be 32 bytes long, not {length}"
 
 
     def __new__(cls, secret = None, network = networks.default, compressed = True):
@@ -90,7 +90,7 @@ class PrivateKey(BasePrivateKey):
     @staticmethod
     def from_bytes(bytes, network = networks.default, compressed = True):
         if len(bytes) != 32:
-            raise PrivateKey.InvalidSecretLength(bytes)
+            raise PrivateKey.InvalidBinaryLength(bytes)
 
         secret = decode_int(bytes)
         return PrivateKey(secret, network, compressed)
