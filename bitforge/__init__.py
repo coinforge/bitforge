@@ -5,3 +5,4 @@ from hdprivkey import HDPrivateKey
 import networks
 import ecdsa
 from unit import Unit
+from uri import URI
