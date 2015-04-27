@@ -26,18 +26,23 @@ def decode_base58h(string):
         raise InvalidBase58h(string)
 
 
-def encode_int(integer):
+def encode_int(integer, big_endian = True):
     bytes = bytearray()
 
     while integer > 0:
         bytes.append(integer & 0xff)
         integer >>= 8
 
-    bytes.reverse()
+    if big_endian:
+        bytes.reverse()
+
     return str(bytes)
 
 
-def decode_int(bytes):
+def decode_int(bytes, big_endian = True):
+    if not big_endian:
+        bytes = reversed(bytes)
+
     integer = 0
 
     for char in bytes:
