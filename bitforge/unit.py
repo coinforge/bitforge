@@ -1,14 +1,14 @@
 
 class Unit(object):
 
-    btc = 100000000.0
-    mbtc = 100000.0
-    bits = 100.0
+    btc = 1e8
+    mbtc = 1e5
+    bits = 1e2
     satoshis = 1.0
 
     @staticmethod
-    def from_fiat(cls, value, rate):
-        return cls(btc = value * rate)        
+    def from_fiat(value, rate):
+        return Unit(btc = value / float(rate))        
 
     def __init__(self, satoshis = None, bits = None, mbtc = None, btc = None):
         if satoshis is not None:
@@ -23,10 +23,10 @@ class Unit(object):
             raise ValueError('Invalid arguments')
 
     def _set_values(self, satoshis):
-        self.satoshis = satoshis
-        self.bits = satoshis / Unit.bits
-        self.mbtc = satoshis / Unit.mbtc
-        self.btc = satoshis / Unit.btc
+        self.satoshis = int(satoshis)
+        self.bits = self.satoshis / Unit.bits
+        self.mbtc = self.satoshis / Unit.mbtc
+        self.btc = self.satoshis / Unit.btc
 
     def at_rate(self, rate):
         return self.btc * rate
