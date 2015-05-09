@@ -62,3 +62,11 @@ def decode_hex(string):
     except:
         # unhexlify() throws 2 different exceptions (length, and alphabet)
         raise InvalidHex(string)
+
+
+def sha256(bytes):
+    return hashlib.sha256(bytes).digest()
+
+
+def ripemd160(bytes):
+    return hashlib.new('ripemd160', bytes).digest()

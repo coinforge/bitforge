@@ -8,11 +8,6 @@ from bitforge.encoding import *
 from bitforge.tools import Buffer
 
 
-class FakeString(str):
-    def __len__(self):
-        return super(FakeString, self).__len__() * 10
-
-
 class TestScript:
     def test_create_emtpy(self):
         s = Script()

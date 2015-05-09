@@ -39,7 +39,7 @@ def invalid_wifs():
 
 
 class TestPrivateKey:
-    
+
     def test_from_random(self):
         k1, k2 = PrivateKey(), PrivateKey()
         assert k1.secret != k2.secret
@@ -180,7 +180,7 @@ class TestPrivateKey:
         assert k.to_address().to_string() == data['address']['test_compress']
 
 
-    def test_to_address_test_compressed(self):
+    def test_to_address_test_uncompressed(self):
         k = PrivateKey.from_wif(data['wif']['test_uncompress'])
         assert k.to_address().to_string() == data['address']['test_uncompress']
 
