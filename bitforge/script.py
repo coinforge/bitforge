@@ -20,7 +20,7 @@ class Instruction(BaseInstruction):
         "Instruction got data with opcode {object}, which does not push data"
 
     class InvalidDataLength(Error):
-        "Opcode {opcode} can't push {data_length} (max {data_length_max})"
+        "Opcode {opcode} can't push {data_length} bytes (max {data_length_max})"
 
         def prepare(self, opcode, data_length, data_length_max):
             self.opcode = opcode
@@ -94,10 +94,8 @@ class Instruction(BaseInstruction):
 
 
 class Script(object):
-
     def __init__(self, instructions = None):
         self.instructions = instructions if instructions is not None else []
-
 
     @staticmethod
     def from_bytes(bytes):
@@ -214,8 +212,8 @@ class Script(object):
 #
 #         self.instructions.append(Instruction(opcode, length, bytes))
 #
-#     def to_bytes(self):
-#         return ''.join(map(Instruction.toBytes, self.instructions))
+    def to_bytes(self):
+        return ''.join(i.to_bytes() for i in self.instructions)
 #
 #     def to_string(self):
 #         return ' '.join(map(str, self.instructions))

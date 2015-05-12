@@ -3,6 +3,7 @@ from enum import Enum
 
 import networks, utils
 from encoding import *
+from errors import *
 # from script import Script
 
 
@@ -24,7 +25,10 @@ class Address(BaseAddress):
         "Failed to detect Address type and network from version number {number}"
 
     class InvalidBase58h(Error, InvalidBase58h):
-        "The PrivateKey string {string} is not valid base58/check"
+        "The Address string {string} is not valid base58/check"
+
+    class InvalidHex(Error, InvalidHex):
+        "The Address string {string} is not valid hexadecimal"
 
     class InvalidHashLength(Error, StringError):
         "The address hash {string} should be 20 bytes long, not {length}"
@@ -38,15 +42,15 @@ class Address(BaseAddress):
 
     def __new__(cls, phash, network = networks.default, type = Type.PublicKey):
         try   : network = networks.find(network)
-        except: raise Address.UnknownNetwork(network)
+        except: raise Address.UnknownNetwork('name', network)
 
         if not isinstance(type, Address.Type):
-            raise InvalidType(type)
+            raise Address.InvalidType(type)
 
         if len(phash) != 20:
             raise Address.InvalidHashLength(phash)
 
-        return super(Address, cls).__new__(cls, raw, network, type)
+        return super(Address, cls).__new__(cls, phash, network, type)
 
     @staticmethod
     def from_string(string):
@@ -65,6 +69,15 @@ class Address(BaseAddress):
         network, type = Address.classify_bytes(bytes)
 
         return Address(bytes[1:], network, type)
+
+    @staticmethod
+    def from_hex(string):
+        try:
+            bytes = decode_hex(string)
+        except InvalidHex:
+            raise Address.InvalidHex(string)
+
+        return Address.from_bytes(bytes)
 
     @staticmethod
     def classify_bytes(bytes):
@@ -91,6 +104,9 @@ class Address(BaseAddress):
 
     def to_string(self):
         return encode_base58h(self.to_bytes())
+
+    def to_hex(self):
+        return encode_hex(self.to_bytes())
 
     # TODO: all keys should be from the same network
     # @staticmethod

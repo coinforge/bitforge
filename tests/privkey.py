@@ -66,8 +66,8 @@ class TestPrivateKey:
 
 
     def test_from_invalid_hex(self):
-        with raises(InvalidHex): PrivateKey.from_hex('a')
-        with raises(InvalidHex): PrivateKey.from_hex('a@')
+        with raises(PrivateKey.InvalidHex): PrivateKey.from_hex('a')
+        with raises(PrivateKey.InvalidHex): PrivateKey.from_hex('a@')
 
 
     def test_from_bytes(self):

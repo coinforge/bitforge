@@ -4,7 +4,7 @@ from errors import *
 
 
 # Below is a list of all *named* opcodes. Their values, integers in the
-# listing, will be replaced with Opcode instances further below.
+# listing, will be dynamically replaced with Opcode instances further below.
 
 # Numbers (in range [0, 16]):
 OP_0  = 0

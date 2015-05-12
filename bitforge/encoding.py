@@ -1,4 +1,4 @@
-import utils, binascii
+import utils, binascii, hashlib
 from errors import StringError
 
 
