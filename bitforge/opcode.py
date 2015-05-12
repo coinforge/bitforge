@@ -167,6 +167,9 @@ class Opcode(object):
     class InvalidConstPushLength(Error, StringError):
         "No constant push opcode can push {length} bytes (only [1-75])"
 
+    class InvalidPushLength(Error, NumberError):
+        "No Opcode can push {number} bytes"
+
     class TypeError(Error, ObjectError):
         "Opcodes are initialized from numbers and names, got object {object}"
 
@@ -182,8 +185,10 @@ class Opcode(object):
 
     @property
     def name(self):
-        # NOTE: some opcodes lack names
-        return Opcode.opcode_number_to_name.get(self.number, None)
+        if self.is_const_push():
+            return "_PUSH_%d_BYTES" % self.number
+        else:
+            return Opcode.opcode_number_to_name[self.number]
 
     def is_push(self):
         return self.is_const_push() or self.is_var_push()
@@ -229,11 +234,29 @@ class Opcode(object):
         return Opcode(getattr(Opcode, name))
 
     @staticmethod
-    def const_push(length):
+    def const_push_for(length):
         if not (1 <= length <= 75):
             raise Opcode.InvalidConstPushLength(length)
 
         return Opcode(length)
+
+    @staticmethod
+    def var_push_for(length):
+        if length < 1:
+            raise InvalidPushLength(length)
+
+        for opcode in [OP_PUSHDATA1, OP_PUSHDATA2, OP_PUSHDATA4]:
+            if length <= Opcode.data_length_max(opcode):
+                return opcode
+
+        raise InvalidPushLength(length)
+
+    @staticmethod
+    def push_for(length):
+        if length <= 75:
+            return Opcode.const_push_for(length)
+        else:
+            return Opcode.var_push_for(length)
 
     @staticmethod
     def data_length_max(opcode):

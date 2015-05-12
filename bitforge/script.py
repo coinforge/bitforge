@@ -1,4 +1,5 @@
 import binascii, collections
+from numbers import Number
 from pubkey import PublicKey
 from opcode import *
 from encoding import *
@@ -20,7 +21,7 @@ class Instruction(BaseInstruction):
         "Instruction got data with opcode {object}, which does not push data"
 
     class InvalidDataLength(Error):
-        "Opcode {opcode} can't push {data_length} bytes (max {data_length_max})"
+        "Opcode {opcode} can't push {data_length} bytes (max/exactly {data_length_max})"
 
         def prepare(self, opcode, data_length, data_length_max):
             self.opcode = opcode
@@ -34,15 +35,16 @@ class Instruction(BaseInstruction):
 
         if opcode.is_push():
             length = len(data)
+            expect = Opcode.data_length_max(opcode)
 
-            if not (0 <= length <= Opcode.data_length_max(opcode)):
-                raise Instruction.InvalidDataLength(opcode, length, Opcode.data_length_max(opcode))
+            if (opcode.is_const_push() and length != expect) or \
+               (opcode.is_var_push and not (0 <= length <= expect)):
+                raise Instruction.InvalidDataLength(opcode, length, expect)
 
         elif data is not None:
             raise Instruction.UnexpectedData(opcode)
 
         return super(Instruction, cls).__new__(cls, opcode, data)
-
 
     def to_bytes(self):
         opcode_byte = chr(self.opcode.number)
@@ -76,7 +78,6 @@ class Instruction(BaseInstruction):
 
             elif self.opcode.is_var_push():
                 return "%s %d %s" % (self.opcode.name, data_len, data_hex)
-
         else:
             return self.opcode.name
 
@@ -88,9 +89,9 @@ class Instruction(BaseInstruction):
 
     def __repr__(self):
         if self.opcode.is_push():
-            return '<Instruction: %s [%s]>' % (self.opcode.name, encode_hex(self.data))
+            return "<Instruction: %s '%s'>" % (self.opcode.name, encode_hex(self.data))
         else:
-            return '<Instruction: %s>' % (self.opcode.name)
+            return "<Instruction: %s>" % (self.opcode.name)
 
 
 class Script(object):
@@ -118,6 +119,53 @@ class Script(object):
             instructions.append(Instruction(opcode, data))
 
         return Script(instructions)
+
+
+    @staticmethod
+    def build(*schematic):
+        instructions = []
+
+        for item in schematic:
+            if isinstance(item, Opcode):
+                args = (item,)
+
+            elif isinstance(item, Number):
+                args = (Opcode(item),)
+
+            elif isinstance(item, str):
+                args = (Opcode.push_for(len(item)), item)
+
+            elif isinstance(item, tuple):
+                if isinstance(item[0], Opcode):
+                    args = tuple(item)
+                else:
+                    args = (Opcode(item[0]), item[1])
+
+            instructions.append(Instruction(*args))
+
+        return Script(instructions)
+
+    @staticmethod
+    def pay_to_address_out(address):
+        return Script.build(
+            OP_DUP,
+            OP_HASH160,
+            address.phash,
+            OP_EQUALVERIFY
+        )
+
+    @staticmethod
+    def pay_to_address_in(pubkey, signature):
+        return Script.build(
+            signature.to_bytes(),
+            pubkey.to_bytes()
+        )
+    #
+    #       s.add(Opcode.OP_DUP)
+    # .add(Opcode.OP_HASH160)
+    # .add(to.hashBuffer)
+    # .add(Opcode.OP_EQUALVERIFY)
+    # .add(Opcode.OP_CHECKSIG);
 #
 #     # @staticmethod
 #     # def from_string(string):
