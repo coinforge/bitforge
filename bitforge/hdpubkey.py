@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os, hmac, hashlib, collections
-import ecdsa, utils, networks
+import ecdsa, utils, network
+from network import Network
 from pubkey import PublicKey
 from utils.intbytes import int_from_bytes, int_to_bytes, to_bytes
 
@@ -12,12 +13,12 @@ HARDENED_START   = 0x80000000
 def calculate_fingerprint(pubkey):
     return utils.encoding.hash160(pubkey.to_bytes())[:4]
 
-BaseHDPublicKey = collections.namedtuple('HDPublicKey', 
+BaseHDPublicKey = collections.namedtuple('HDPublicKey',
     ['pubkey', 'chain', 'depth', 'index', 'parent', 'network', 'fingerprint']
 )
 
 class HDPublicKey(BaseHDPublicKey):
-    def __new__(cls, pubkey, chain, depth = 0, index = 0, parent = ROOT_FINGERPRINT, network = networks.default):
+    def __new__(cls, pubkey, chain, depth = 0, index = 0, parent = ROOT_FINGERPRINT, network = network.default):
         assert isinstance(pubkey, PublicKey)
         fingerprint = int_from_bytes(calculate_fingerprint(pubkey))
 
@@ -47,7 +48,7 @@ class HDPublicKey(BaseHDPublicKey):
 
         # The version field is used to deduce the network:
         version = int_from_bytes(data[HDPublicKey.VersionStart:HDPublicKey.VersionEnd])
-        network = networks.find(version, 'hd_public_key')
+        network = Network.get_by_field('hd_public_key', version)
         pubkey  = PublicKey.from_bytes(data[HDPublicKey.PublicKeyStart : HDPublicKey.PublicKeyEnd], network)
 
         return HDPublicKey(pubkey, chain, depth, index, parent, network)

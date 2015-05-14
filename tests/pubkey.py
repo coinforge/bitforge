@@ -1,5 +1,5 @@
 from pytest import raises, fixture, fail
-import bitforge.networks
+import bitforge.network
 from bitforge.privkey import PrivateKey
 from bitforge.pubkey import PublicKey
 
@@ -50,7 +50,7 @@ class TestPublicKey:
 
         assert pubkey.pair == data['pubkey_pair']
         assert pubkey.compressed is True
-        assert pubkey.network is bitforge.networks.default
+        assert pubkey.network is bitforge.network.default
 
 
     def test_to_hex_compressed(self):
@@ -63,7 +63,7 @@ class TestPublicKey:
 
         assert pubkey.pair == data['pubkey_pair']
         assert pubkey.compressed is False
-        assert pubkey.network is bitforge.networks.default
+        assert pubkey.network is bitforge.network.default
 
 
     def test_from_hex_errors(self):
@@ -81,7 +81,7 @@ class TestPublicKey:
 
         assert pubkey.pair == data['pubkey_pair']
         assert pubkey.compressed is True
-        assert pubkey.network is bitforge.networks.default
+        assert pubkey.network is bitforge.network.default
 
         with raises(PublicKey.InvalidBinary):
             PublicKey.from_bytes('a')
@@ -96,20 +96,20 @@ class TestPublicKey:
 
 
     def test_to_address_live_compress(self):
-        pubkey = PublicKey.from_hex(data['pubkey_hex']['compressed'], bitforge.networks.livenet)
+        pubkey = PublicKey.from_hex(data['pubkey_hex']['compressed'], bitforge.network.livenet)
         assert pubkey.to_address().to_string() == data['address']['live_compressed']
 
 
     def test_to_address_live_uncompress(self):
-        pubkey = PublicKey.from_hex(data['pubkey_hex']['uncompressed'], bitforge.networks.livenet)
+        pubkey = PublicKey.from_hex(data['pubkey_hex']['uncompressed'], bitforge.network.livenet)
         assert pubkey.to_address().to_string() == data['address']['live_uncompressed']
 
 
     def test_to_address_test_compress(self):
-        pubkey = PublicKey.from_hex(data['pubkey_hex']['compressed'], bitforge.networks.testnet)
+        pubkey = PublicKey.from_hex(data['pubkey_hex']['compressed'], bitforge.network.testnet)
         assert pubkey.to_address().to_string() == data['address']['test_compressed']
 
 
     def test_to_address_test_uncompress(self):
-        pubkey = PublicKey.from_hex(data['pubkey_hex']['uncompressed'], bitforge.networks.testnet)
+        pubkey = PublicKey.from_hex(data['pubkey_hex']['uncompressed'], bitforge.network.testnet)
         assert pubkey.to_address().to_string() == data['address']['test_uncompressed']

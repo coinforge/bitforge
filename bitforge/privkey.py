@@ -1,6 +1,7 @@
 import random, struct, binascii, collections
-import networks, utils
+import network, utils
 from errors import *
+from network import Network
 from pubkey import PublicKey
 from address import Address
 from encoding import *
@@ -15,8 +16,8 @@ def random_secret():
 
 def find_network(value, attr = 'name'):
     try:
-        return networks.find(value, attr)
-    except networks.UnknownNetwork:
+        return Network.get_by_field(attr, value)
+    except:
         raise PrivateKey.UnknownNetwork(attr, value)
 
 
@@ -32,7 +33,7 @@ class PrivateKey(BasePrivateKey):
     class InvalidSecret(Error, NumberError):
         "Invalid secret for PrivateKey: {number}"
 
-    class UnknownNetwork(Error, networks.UnknownNetwork):
+    class UnknownNetwork(Error, Network.UnknownNetwork):
         "No network for PrivateKey with an attribute '{key}' of value {value}"
 
     class InvalidWifLength(Error, StringError):
@@ -51,9 +52,7 @@ class PrivateKey(BasePrivateKey):
         "The binary secret {string} should be 32 bytes long, not {length}"
 
 
-    def __new__(cls, secret = None, network = networks.default, compressed = True):
-        network = find_network(network)
-
+    def __new__(cls, secret = None, network = network.default, compressed = True):
         if secret is None:
             secret = random_secret()
 
@@ -88,7 +87,7 @@ class PrivateKey(BasePrivateKey):
         return PrivateKey(secret, network, compressed)
 
     @staticmethod
-    def from_bytes(bytes, network = networks.default, compressed = True):
+    def from_bytes(bytes, network = network.default, compressed = True):
         if len(bytes) != 32:
             raise PrivateKey.InvalidBinaryLength(bytes)
 
@@ -96,7 +95,7 @@ class PrivateKey(BasePrivateKey):
         return PrivateKey(secret, network, compressed)
 
     @staticmethod
-    def from_hex(string, network = networks.default, compressed = True):
+    def from_hex(string, network = network.default, compressed = True):
         try:
             bytes = decode_hex(string)
         except InvalidHex:

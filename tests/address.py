@@ -1,7 +1,7 @@
 import json
 from pytest import raises, fixture, fail
 
-from bitforge import networks, Address, PublicKey
+from bitforge import network, Address, PublicKey
 from bitforge.encoding import *
 
 
@@ -9,7 +9,7 @@ data = {
     'base58h': 'mz7Rb837TrRMBxSNV8ZqRysS1JCDPWFLCc',
     'hex'    : '6fcbf730e06e5f8e4fc44f071d436a4660ddde3e47',
     'phash'  : 'cbf730e06e5f8e4fc44f071d436a4660ddde3e47',
-    'network': networks.testnet,
+    'network': network.testnet,
     'type'   : Address.Type.PublicKey,
     'pubkey' : [
         2505267213527803793801554682227237457256110293342017361806815033635284562140L,
@@ -22,10 +22,10 @@ def read_addr_fixture_info(info):
     print info
     string_b58h, string_hex, meta = info
 
-    network = networks.testnet if meta['isTestnet'] else networks.livenet
+    network_ = network.testnet if meta['isTestnet'] else network.livenet
     type    = Address.Type.PublicKey if meta['addrType'] == 'pubkey' else Address.Type.Script
 
-    return (string_b58h, string_hex, network, type)
+    return (string_b58h, string_hex, network_, type)
 
 
 @fixture
@@ -36,10 +36,10 @@ def valid_addresses():
 
 class TestAddress:
     def test_create(self):
-        Address('a' * 20, networks.livenet, Address.Type.PublicKey)
-        Address('a' * 20, networks.livenet, Address.Type.Script)
-        Address('a' * 20, networks.testnet, Address.Type.PublicKey)
-        Address('a' * 20, networks.testnet, Address.Type.Script)
+        Address('a' * 20, network.livenet, Address.Type.PublicKey)
+        Address('a' * 20, network.livenet, Address.Type.Script)
+        Address('a' * 20, network.testnet, Address.Type.PublicKey)
+        Address('a' * 20, network.testnet, Address.Type.Script)
 
     def test_invalid_phash(self):
         with raises(Address.InvalidHashLength):
@@ -55,7 +55,7 @@ class TestAddress:
 
     def test_invalid_type(self):
         with raises(Address.InvalidType):
-            Address('a' * 20, networks.livenet, None)
+            Address('a' * 20, network.livenet, None)
 
     def test_from_hex(self):
         address = Address.from_hex(data['hex'])

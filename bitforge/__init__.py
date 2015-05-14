@@ -3,7 +3,8 @@ from pubkey import PublicKey
 from address import Address
 from script import Script
 from hdprivkey import HDPrivateKey
-import networks
+from network import Network
+import network
 import ecdsa
 from unit import Unit
 from uri import URI

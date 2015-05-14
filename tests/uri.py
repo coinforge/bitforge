@@ -4,10 +4,10 @@ from bitforge import URI
 from bitforge import Address
 from bitforge import Unit
 
-import bitforge.networks
+import bitforge.network
 
 class TestURI:
-    
+
     def test_parse_uri(self):
         uri = URI.parse('bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj')
         assert uri['address'] == u'1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj'
@@ -21,8 +21,8 @@ class TestURI:
         uri = URI.parse('bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj?amount=123.22&other-param=something&req-extra=param')
         assert uri['address'] == '1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj'
         assert uri['amount'] == '123.22'
-        assert uri['other-param'] == u'something' 
-        assert uri['req-extra'] == u'param' 
+        assert uri['other-param'] == u'something'
+        assert uri['req-extra'] == u'param'
 
     def test_is_valid(self):
         assert URI.is_valid('bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj')
@@ -40,11 +40,11 @@ class TestURI:
     def test_uri_address(self):
         uri = URI('bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj')
         assert isinstance(uri.address, Address)
-        assert uri.address.network == bitforge.networks.livenet
-        
+        assert uri.address.network == bitforge.network.livenet
+
         uri = URI('bitcoin:mkYY5NRvikVBY1EPtaq9fAFgquesdjqECw')
         assert isinstance(uri.address, Address)
-        assert uri.address.network == bitforge.networks.testnet
+        assert uri.address.network == bitforge.network.testnet
 
     def test_uri_amount(self):
         uri = URI('bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj?amount=123.22')

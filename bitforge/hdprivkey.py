@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os, hmac, hashlib, collections
-import ecdsa, utils, networks
+import ecdsa, utils, network
+from network import Network
 from privkey import PrivateKey
 from hdpubkey import HDPublicKey
 from utils.intbytes import int_from_bytes, int_to_bytes, to_bytes
@@ -17,12 +18,12 @@ def calculate_fingerprint(privkey):
     return utils.encoding.hash160(privkey.to_public_key().to_bytes())[:4]
 
 
-BaseHDPrivateKey = collections.namedtuple('HDPrivateKey', 
+BaseHDPrivateKey = collections.namedtuple('HDPrivateKey',
     ['privkey', 'chain', 'depth', 'index', 'parent', 'network', 'fingerprint']
 )
 
 class HDPrivateKey(BaseHDPrivateKey):
-    def __new__(cls, privkey, chain, depth = 0, index = 0, parent = ROOT_FINGERPRINT, network = networks.default):
+    def __new__(cls, privkey, chain, depth = 0, index = 0, parent = ROOT_FINGERPRINT, network = network.default):
         assert isinstance(privkey, PrivateKey)
         fingerprint = int_from_bytes(calculate_fingerprint(privkey))
 
@@ -52,7 +53,7 @@ class HDPrivateKey(BaseHDPrivateKey):
 
         # The version field is used to deduce the network:
         version = int_from_bytes(data[HDPrivateKey.VersionStart:HDPrivateKey.VersionEnd])
-        network = networks.find(version, 'hd_private_key')
+        network = Network.get_by_field('hd_private_key', version)
         privkey = PrivateKey.from_bytes(data[HDPrivateKey.PrivateKeyStart : HDPrivateKey.PrivateKeyEnd], network)
 
         return HDPrivateKey(privkey, chain, depth, index, parent, network)

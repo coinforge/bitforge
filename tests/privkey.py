@@ -1,7 +1,7 @@
 import json
 from pytest import raises, fixture, fail
 
-from bitforge import networks
+from bitforge import network
 from bitforge.encoding import *
 from bitforge.privkey import PrivateKey
 
@@ -62,7 +62,7 @@ class TestPrivateKey:
         assert k.to_bytes() == data['privkey_bin']
 
         assert k.compressed is True
-        assert k.network is networks.default
+        assert k.network is network.default
 
 
     def test_from_invalid_hex(self):
@@ -77,7 +77,7 @@ class TestPrivateKey:
         assert k.to_bytes() == data['privkey_bin']
 
         assert k.compressed is True
-        assert k.network is networks.default
+        assert k.network is network.default
 
 
     def test_from_invalid_bytes(self):
@@ -92,7 +92,7 @@ class TestPrivateKey:
         k = PrivateKey.from_wif(data['wif']['live_compress'])
 
         assert k.compressed is True
-        assert k.network is networks.livenet
+        assert k.network is network.livenet
         assert k.to_wif() == data['wif']['live_compress']
 
 
@@ -100,7 +100,7 @@ class TestPrivateKey:
         k = PrivateKey.from_wif(data['wif']['test_compress'])
 
         assert k.compressed is True
-        assert k.network is networks.testnet
+        assert k.network is network.testnet
         assert k.to_wif() == data['wif']['test_compress']
 
 
@@ -108,7 +108,7 @@ class TestPrivateKey:
         k = PrivateKey.from_wif(data['wif']['live_uncompress'])
 
         assert k.compressed is False
-        assert k.network is networks.livenet
+        assert k.network is network.livenet
         assert k.to_wif() == data['wif']['live_uncompress']
 
 
@@ -116,7 +116,7 @@ class TestPrivateKey:
         k = PrivateKey.from_wif(data['wif']['test_uncompress'])
 
         assert k.compressed is False
-        assert k.network is networks.testnet
+        assert k.network is network.testnet
         assert k.to_wif() == data['wif']['test_uncompress']
 
 
@@ -139,7 +139,7 @@ class TestPrivateKey:
     def test_bitcoind_valid_wifs(self, valid_wifs):
         for wif, secret_hex, attrs in valid_wifs:
             secret     = decode_int(decode_hex(secret_hex))
-            network    = networks.testnet if attrs['isTestnet'] else networks.livenet
+            network    = network.testnet if attrs['isTestnet'] else network.livenet
             compressed = attrs['isCompressed']
 
             k = PrivateKey.from_wif(wif)
