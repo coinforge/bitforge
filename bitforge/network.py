@@ -1,4 +1,5 @@
 from collections import namedtuple
+from cryptography.hazmat.primitives.asymmetric import ec
 from errors import BitforgeError, KeyValueError, StringError
 
 
@@ -8,6 +9,8 @@ BaseNetwork = namedtuple('Network', [
     # Descriptors
     'name',
     'aliases',
+    # Cryptography parameters
+    'curve',
     # Serialization magic numbers
     'pubkeyhash',
     'wif_prefix',
@@ -87,6 +90,8 @@ testnet = Network(
     name = 'testnet',
     aliases = [],
 
+    curve = ec.SECP256K1,
+
     pubkeyhash = 111,
     wif_prefix = 239,
     scripthash = 196,
@@ -107,6 +112,8 @@ testnet = Network(
 default = livenet = Network(
     name = 'livenet',
     aliases = ['mainnet', 'default'],
+
+    curve = ec.SECP256K1,
 
     pubkeyhash = 0x00,
     wif_prefix = 0x80,
