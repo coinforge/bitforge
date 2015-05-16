@@ -1,8 +1,9 @@
-from errors import *
+import error
+
 
 class Buffer(bytearray):
 
-    class Error(BitforgeError):
+    class Error(error.BitforgeError):
         pass
 
     class InsufficientData(Error):
@@ -11,7 +12,6 @@ class Buffer(bytearray):
         def prepare(self, remaining, requested):
             self.remaining = remaining
             self.requested = requested
-
 
     def read(self, amount):
         if len(self) < amount:
@@ -23,3 +23,9 @@ class Buffer(bytearray):
 
     def write(self, data):
         self.extend(data)
+
+
+def elliptic_curve_key_size(curve):
+    """Size (in bytes) of an elliptic curve private key."""
+
+    return (curve.key_size + 7) // 8
