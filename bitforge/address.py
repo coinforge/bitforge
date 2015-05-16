@@ -1,7 +1,8 @@
 import binascii, collections
 from enum import Enum
 
-import networks, utils
+import network, utils
+from network import Network
 from encoding import *
 from errors import *
 # from script import Script
@@ -18,7 +19,7 @@ class Address(BaseAddress):
     class Error(BitforgeError):
         pass
 
-    class UnknownNetwork(Error, networks.UnknownNetwork):
+    class UnknownNetwork(Error, Network.UnknownNetwork):
         "No network for Address with an attribute '{key}' of value {value}"
 
     class InvalidVersion(Error, NumberError):
@@ -40,10 +41,7 @@ class Address(BaseAddress):
         "Address type {object} is not an instance of Address.Type"
 
 
-    def __new__(cls, phash, network = networks.default, type = Type.PublicKey):
-        try   : network = networks.find(network)
-        except: raise Address.UnknownNetwork('name', network)
-
+    def __new__(cls, phash, network = network.default, type = Type.PublicKey):
         if not isinstance(type, Address.Type):
             raise Address.InvalidType(type)
 
@@ -83,11 +81,11 @@ class Address(BaseAddress):
     def classify_bytes(bytes):
         version = decode_int(bytes[0])
 
-        network = networks.find(version, 'pubkeyhash', raises = False)
+        network = Network.get_by_field('pubkeyhash', version, raises = False)
         if network is not None:
             return (network, Address.Type.PublicKey)
 
-        network = networks.find(version, 'scripthash', raises = False)
+        network = Network.get_by_field('scripthash', version, raises = False)
         if network is not None:
             return (network, Address.Type.Script)
 

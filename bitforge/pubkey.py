@@ -1,6 +1,7 @@
 import collections
 from utils.secp256k1 import generator_secp256k1
-import networks, utils
+import network, utils
+from network import Network
 from address import Address
 from errors import *
 from encoding import *
@@ -8,8 +9,8 @@ from encoding import *
 
 def find_network(value, attr = 'name'):
     try:
-        return networks.find(value, attr)
-    except networks.UnknownNetwork:
+        return Network.get_by_field(attr, value)
+    except:
         raise PublicKey.UnknownNetwork(attr, value)
 
 
@@ -25,7 +26,7 @@ class PublicKey(BasePublicKey):
     class InvalidPair(Error, ObjectError):
         "The PublicKey pair {object} is invalid (not a point of the curve)"
 
-    class UnknownNetwork(Error, networks.UnknownNetwork):
+    class UnknownNetwork(Error, Network.UnknownNetwork):
         "No network for PublicKey with an attribute '{key}' of value {value}"
 
     class InvalidBinary(Error, StringError):
@@ -35,9 +36,7 @@ class PublicKey(BasePublicKey):
         "The PublicKey string {string} is not valid hexadecimal"
 
 
-    def __new__(cls, pair, network = networks.default, compressed = True):
-        network = find_network(network) # may raise UnknownNetwork
-
+    def __new__(cls, pair, network = network.default, compressed = True):
         if not utils.ecdsa.is_public_pair_valid(generator_secp256k1, pair):
             raise PublicKey.InvalidPair(pair)
 
@@ -53,7 +52,7 @@ class PublicKey(BasePublicKey):
         return PublicKey(pair, privkey.network, privkey.compressed)
 
     @staticmethod
-    def from_bytes(bytes, network = networks.default):
+    def from_bytes(bytes, network = network.default):
         try:
             pair       = utils.encoding.sec_to_public_pair(bytes)
             compressed = utils.encoding.is_sec_compressed(bytes)
@@ -63,7 +62,7 @@ class PublicKey(BasePublicKey):
         return PublicKey(pair, network, compressed)
 
     @staticmethod
-    def from_hex(string, network = networks.default):
+    def from_hex(string, network = network.default):
         try:
             bytes = decode_hex(string)
         except InvalidHex:
