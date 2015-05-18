@@ -1,9 +1,10 @@
 import collections
 
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 
-from bitforge import encoding, error, network, tools
+from bitforge import address, encoding, error, network, tools
 
 
 # Magic numbers for the SEC1 public key format (TODO: shouldn't be here!)
@@ -111,10 +112,18 @@ class PublicKey(BasePublicKey):
 
         return cls.from_point(x, y, network, compressed, backend)
 
-    # def address(self):
-    #     """TODO"""
-    #
-    #     return Address.from_public_key(self)
+    def address(self, backend=default_backend()):
+        """TODO"""
+
+        SHA256 = hashes.Hash(hashes.SHA256(), backend)
+        SHA256.update(self.to_bytes())
+
+        RIPEMD160 = hashes.Hash(hashes.RIPEMD160, backend)
+        RIPEMD160.update(SHA256.finalize())
+
+        digest = RIPEMD160.finalize()
+
+        return address.Address(digest, self.network, address.Type.PublicKey)
 
     def to_bytes(self):
         """TODO"""
