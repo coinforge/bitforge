@@ -29,6 +29,7 @@ BaseNetwork = collections.namedtuple('Network', [
     'aliases',  # All the network aliases
 
     # Cryptography parameters
+    # WARNING: only curves over prime fields are currently supported
     'curve',  # Elliptic curve used for the crypto
     'hash_function',  # Signature hashing function
 

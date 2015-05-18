@@ -3,7 +3,7 @@ import collections
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import ec
 
-from bitforge import encoding, error, network, tools
+from bitforge import encoding, error, network, pubkey, tools
 
 
 class Error(error.BitforgeError):
@@ -20,7 +20,7 @@ class InvalidEncoding(Error):
 
 BasePrivateKey = collections.namedtuple('PrivateKey', [
     'key',  # Elliptic curve private key
-    'network',
+    'network',  # Bitcoin-compatible network
     'compressed',  # Whether the public key should be serialized in compressed format
 ])
 
@@ -77,9 +77,12 @@ class PrivateKey(BasePrivateKey):
 
     @classmethod
     def from_bytes(cls, data, network=network.default, compressed=True, backend=default_backend()):
-        """Create a private key from its raw binary encoding.
+        """Create a private key from its raw binary encoding (in SEC1 format).
 
         The input buffer should be a zero-padded big endian unsigned integer.
+        For more info on this format, see:
+
+        http://www.secg.org/sec1-v2.pdf, section 2.3.6
         """
 
         if len(data) != tools.elliptic_curve_key_size(network.curve):
@@ -112,20 +115,21 @@ class PrivateKey(BasePrivateKey):
 
         # The first byte determines the network
         try:
-            network_ = network.Network.get_by_field('wif_prefix', data[0])
+            prefix = data.pop(0)
 
         except IndexError:
             raise InvalidEncoding('Invalid WIF length')
 
+        try:
+            network_ = network.Network.get_by_field('wif_prefix', prefix)
+
         except network.UnknownNetwork as e:
             raise InvalidEncoding(e.message)
 
-        data.pop(0)
-
-        key_size = tools.elliptic_curve_key_size(network_.curve)
-
         # If the public key should be compressed-encoded, there will be an
         # extra 1 byte at the end
+        key_size = tools.elliptic_curve_key_size(network_.curve)
+
         compressed = True if len(data) == key_size + 1 else False
 
         if compressed and data[-1] == 1:
