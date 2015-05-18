@@ -3,7 +3,7 @@ import collections
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import ec
 
-from bitforge import encoding, error, network, pubkey, tools
+from bitforge import encoding, error, network, tools
 
 
 class Error(error.BitforgeError):
@@ -29,7 +29,7 @@ class PrivateKey(BasePrivateKey):
     """Bitcoin private key."""
 
     def __new__(cls, key, network=network.default, compressed=True):
-        """Create a Bitcoin private key from an ECDSA private key."""
+        """Create a Bitcoin private key from an EC private key."""
 
         return super(PrivateKey, cls).__new__(cls, key, network, compressed)
 
@@ -56,7 +56,7 @@ class PrivateKey(BasePrivateKey):
         # follows to:
         #
         #   try:
-        #       private_numbers = ec.EllipticCurvePrivateNumbers.from_private_number_and_curve(exponent, network.curve)
+        #       private_numbers = ec.EllipticCurvePrivateNumbers.from_private_value_and_curve(exponent, network.curve, backend)
         #   except ??:
         #       raise InvalidExponent()
         #
@@ -71,7 +71,7 @@ class PrivateKey(BasePrivateKey):
         except AssertionError:
             raise InvalidExponent()
 
-        key = load_der_private_key(sig_key.to_der(), password=None, backend=backend())
+        key = load_der_private_key(sig_key.to_der(), password=None, backend=backend)
 
         return cls(key, network, compressed)
 

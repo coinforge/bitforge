@@ -90,6 +90,8 @@ class Network(BaseNetwork):
                 if getattr(other, field) == getattr(network, field):
                     raise InvalidNetwork(field, getattr(network, field))
 
+        cls._networks.append(network)
+
         # Enforce uniqueness of the network aliases
         for name in [network.name] + network.aliases:
             if name in cls._networks_by_name:
@@ -108,7 +110,7 @@ class Network(BaseNetwork):
 testnet = Network(
     name = 'testnet',
     aliases = [],
-    curve = ec.SECP256K1,
+    curve = ec.SECP256K1(),
     hash_function = hashes.SHA256,
     pubkeyhash = 111,
     wif_prefix = 239,
@@ -129,7 +131,7 @@ testnet = Network(
 default = livenet = Network(
     name = 'livenet',
     aliases = ['mainnet', 'default'],
-    curve = ec.SECP256K1,
+    curve = ec.SECP256K1(),
     hash_function = hashes.SHA256,
     pubkeyhash = 0x00,
     wif_prefix = 0x80,
