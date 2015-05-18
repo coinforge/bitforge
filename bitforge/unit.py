@@ -8,7 +8,7 @@ class Unit(object):
 
     @staticmethod
     def from_fiat(value, rate):
-        return Unit(btc = value / float(rate))        
+        return Unit(btc = value / float(rate))
 
     def __init__(self, satoshis = None, bits = None, mbtc = None, btc = None):
         if satoshis is not None:

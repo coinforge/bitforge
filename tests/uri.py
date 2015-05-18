@@ -1,10 +1,8 @@
-from pytest import raises
-
 from bitforge import URI
 from bitforge import Address
 from bitforge import Unit
+from bitforge import network
 
-import bitforge.network
 
 class TestURI:
 
@@ -40,20 +38,20 @@ class TestURI:
     def test_uri_address(self):
         uri = URI('bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj')
         assert isinstance(uri.address, Address)
-        assert uri.address.network == bitforge.network.livenet
+        assert uri.address.network == network.livenet
 
         uri = URI('bitcoin:mkYY5NRvikVBY1EPtaq9fAFgquesdjqECw')
         assert isinstance(uri.address, Address)
-        assert uri.address.network == bitforge.network.testnet
+        assert uri.address.network == network.testnet
 
     def test_uri_amount(self):
         uri = URI('bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj?amount=123.22')
         assert isinstance(uri.amount, Unit)
         assert uri.amount.satoshis == 12322000000
 
-    def test_uri_extras(self):
-       uri = URI('bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj?amount=1.2&other=param')
-       assert uri.extras['other'] == u'param'
+    def test_uri_extras_2(self):
+        uri = URI('bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj?amount=1.2&other=param')
+        assert uri.extras['other'] == u'param'
 
     def test_create_params(self):
         uri = URI({
@@ -94,10 +92,10 @@ class TestURI:
         assert uri.to_uri() == 'bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj'
 
         uri = URI({
-          'address': '1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj',
-          'amount': 110001000,
-          'message': 'Hello World',
-          'something': 'else'
+            'address': '1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj',
+            'amount': 110001000,
+            'message': 'Hello World',
+            'something': 'else'
         })
 
         assert uri.to_uri() == 'bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj?amount=1.10001&message=Hello+World&something=else'
