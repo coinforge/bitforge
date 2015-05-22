@@ -1,9 +1,9 @@
 import json
-from pytest import raises, fixture, fail
+from pytest import fixture, raises
 
-from bitforge import network
-from bitforge.encoding import *
+from bitforge import encoding, network, privkey
 from bitforge.privkey import PrivateKey
+
 
 data = {
     'privkey_hex' : 'f04da984a7d553a0ac51b50bf92d2257d46f65286f2d5da5b83f8ccc114393a7',
@@ -32,61 +32,57 @@ def valid_wifs():
     with open('tests/data/valid_wifs.json') as f:
         return [ item for item in json.load(f) if item[2]['isPrivkey'] ]
 
+
 @fixture
 def invalid_wifs():
     with open('tests/data/invalid_wifs.json') as f:
         return [ item[0] for item in json.load(f) ]
 
 
-class TestPrivateKey:
-
-    def test_from_random(self):
-        k1, k2 = PrivateKey(), PrivateKey()
-        assert k1.secret != k2.secret
+@fixture
+def invalid_exponents():
+    return [-100, -1, 0, 2 ** 256 - 100, 2 ** 256, 2 ** 300]
 
 
-    def test_invalid_secret(self):
-        with raises(PrivateKey.InvalidSecret): PrivateKey(-1)
-        with raises(PrivateKey.InvalidSecret): PrivateKey(10 ** 100)
+@fixture
+def valid_exponents():
+    return [1, 2, 10000, 2 ** 255]
 
 
-    def test_invalid_network(self):
-        with raises(PrivateKey.UnknownNetwork):
-            PrivateKey(network = -1)
+class TestPrivateKey(object):
 
+    def test_generate_random_keys(self):
 
-    def test_from_hex(self):
-        k = PrivateKey.from_hex(data['privkey_hex'])
+        k1 = PrivateKey.generate()
+        k2 = PrivateKey.generate()
+        assert k1.key.private_numbers() != k2.key.private_numbers()
 
-        assert k.to_hex() == data['privkey_hex']
-        assert k.to_bytes() == data['privkey_bin']
+    def test_from_secret_exponent(self, valid_exponents):
 
-        assert k.compressed is True
-        assert k.network is network.default
+        for exponent in valid_exponents:
+            k = PrivateKey.from_secret_exponent(exponent)
+            assert k.key.private_numbers().private_value == exponent
 
+    def test_from_invalid_secret_exponent(self, invalid_exponents):
 
-    def test_from_invalid_hex(self):
-        with raises(PrivateKey.InvalidHex): PrivateKey.from_hex('a')
-        with raises(PrivateKey.InvalidHex): PrivateKey.from_hex('a@')
-
+        for exponent in invalid_exponents:
+            with raises(privkey.InvalidExponent):
+                PrivateKey.from_secret_exponent(exponent)
 
     def test_from_bytes(self):
-        k = PrivateKey.from_bytes(data['privkey_bin'])
 
-        assert k.to_hex() == data['privkey_hex']
-        assert k.to_bytes() == data['privkey_bin']
+        k = PrivateKey.from_bytes(data['privkey_bin'])
 
         assert k.compressed is True
         assert k.network is network.default
-
+        assert k.to_bytes() == data['privkey_bin']
 
     def test_from_invalid_bytes(self):
-        with raises(PrivateKey.InvalidBinaryLength):
+        with raises(privkey.InvalidEncoding):
             PrivateKey.from_bytes('a')
 
-        with raises(PrivateKey.InvalidBinaryLength):
+        with raises(privkey.InvalidEncoding):
             PrivateKey.from_bytes('a' * 33)
-
 
     def test_from_wif_live_compress(self):
         k = PrivateKey.from_wif(data['wif']['live_compress'])
@@ -95,14 +91,12 @@ class TestPrivateKey:
         assert k.network is network.livenet
         assert k.to_wif() == data['wif']['live_compress']
 
-
     def test_from_wif_test_compress(self):
         k = PrivateKey.from_wif(data['wif']['test_compress'])
 
         assert k.compressed is True
         assert k.network is network.testnet
         assert k.to_wif() == data['wif']['test_compress']
-
 
     def test_from_wif_live_uncompress(self):
         k = PrivateKey.from_wif(data['wif']['live_uncompress'])
@@ -111,7 +105,6 @@ class TestPrivateKey:
         assert k.network is network.livenet
         assert k.to_wif() == data['wif']['live_uncompress']
 
-
     def test_from_wif_test_uncompress(self):
         k = PrivateKey.from_wif(data['wif']['test_uncompress'])
 
@@ -119,76 +112,70 @@ class TestPrivateKey:
         assert k.network is network.testnet
         assert k.to_wif() == data['wif']['test_uncompress']
 
-
     def test_from_invalid_wif(self):
-        too_short = encode_base58h('a')
-        too_long  = encode_base58h('a' * 30)
+        too_short = encoding.b2a_base58check('a')
 
-        with raises(PrivateKey.InvalidWifLength): PrivateKey.from_wif(too_short)
-        with raises(PrivateKey.InvalidWifLength): PrivateKey.from_wif(too_long)
+        with raises(privkey.InvalidEncoding):
+            PrivateKey.from_wif(too_short)
 
-        valid = decode_base58h(PrivateKey().to_wif())
+        too_long = encoding.b2a_base58check('a' * 30)
 
-        with raises(PrivateKey.InvalidCompressionByte):
-            PrivateKey.from_wif(encode_base58h(valid[:-1] + 'a'))
+        with raises(privkey.InvalidEncoding):
+            PrivateKey.from_wif(too_long)
 
-        with raises(PrivateKey.UnknownNetwork):
-            PrivateKey.from_wif(encode_base58h('a' + valid[1:]))
+        valid = encoding.a2b_base58check(PrivateKey.generate().to_wif())
 
+        with raises(privkey.InvalidEncoding):
+            PrivateKey.from_wif(encoding.b2a_base58check(valid[:-1] + 'a'))
+
+        with raises(privkey.InvalidEncoding):
+            PrivateKey.from_wif(encoding.b2a_base58check('a' + valid[1:]))
 
     def test_bitcoind_valid_wifs(self, valid_wifs):
         for wif, secret_hex, attrs in valid_wifs:
-            secret     = decode_int(decode_hex(secret_hex))
-            network    = network.testnet if attrs['isTestnet'] else network.livenet
+            secret = encoding.b2i_bigendian(encoding.a2b_hex(secret_hex))
+            network_ = network.testnet if attrs['isTestnet'] else network.livenet
             compressed = attrs['isCompressed']
 
             k = PrivateKey.from_wif(wif)
 
-            assert k.secret == secret
-            assert k.network is network
+            assert k.key.private_numbers().private_value == secret
+            assert k.network is network_
             assert k.compressed == compressed
-
 
     def test_bitcoind_invalid_wifs(self, invalid_wifs):
         for invalid_wif in invalid_wifs:
-            with raises(PrivateKey.Error):
+            with raises(privkey.InvalidEncoding):
                 PrivateKey.from_wif(invalid_wif)
 
-
-    def test_to_pubkey_compressed(self):
-        k = PrivateKey.from_wif(data['wif']['live_compress'])
-        assert k.to_public_key().to_hex() == data['pubkey']['compress_hex']
-
-
-    def test_to_pubkey_compressed(self):
-        k = PrivateKey.from_wif(data['wif']['live_uncompress'])
-        assert k.to_public_key().to_hex() == data['pubkey']['uncompress_hex']
-
-
-    def test_to_address_live_compressed(self):
-        k = PrivateKey.from_wif(data['wif']['live_compress'])
-        assert k.to_address().to_string() == data['address']['live_compress']
-
-
-    def test_to_address_live_uncompressed(self):
-        k = PrivateKey.from_wif(data['wif']['live_uncompress'])
-        assert k.to_address().to_string() == data['address']['live_uncompress']
-
-
-    def test_to_address_test_compressed(self):
-        k = PrivateKey.from_wif(data['wif']['test_compress'])
-        assert k.to_address().to_string() == data['address']['test_compress']
-
-
-    def test_to_address_test_uncompressed(self):
-        k = PrivateKey.from_wif(data['wif']['test_uncompress'])
-        assert k.to_address().to_string() == data['address']['test_uncompress']
-
-
     def test_roundtrip_wif(self):
-        k1 = PrivateKey()
+        k1 = PrivateKey.generate()
         k2 = PrivateKey.from_wif(k1.to_wif())
 
-        assert k1.secret == k2.secret
+        assert k1.key.private_numbers().private_value == k2.key.private_numbers().private_value
         assert k1.network is k2.network
         assert k1.compressed == k2.compressed
+
+    # def test_to_pubkey_compressed(self):
+    #     k = PrivateKey.from_wif(data['wif']['live_compress'])
+    #     assert k.to_public_key().to_hex() == data['pubkey']['compress_hex']
+
+    # def test_to_pubkey_compressed(self):
+    #     k = PrivateKey.from_wif(data['wif']['live_uncompress'])
+    #     assert k.to_public_key().to_hex() == data['pubkey']['uncompress_hex']
+
+    # def test_to_address_live_compressed(self):
+    #     k = PrivateKey.from_wif(data['wif']['live_compress'])
+    #     assert k.to_address().to_string() == data['address']['live_compress']
+
+    # def test_to_address_live_uncompressed(self):
+    #     k = PrivateKey.from_wif(data['wif']['live_uncompress'])
+    #     assert k.to_address().to_string() == data['address']['live_uncompress']
+
+    # def test_to_address_test_compressed(self):
+    #     k = PrivateKey.from_wif(data['wif']['test_compress'])
+    #     assert k.to_address().to_string() == data['address']['test_compress']
+
+    # def test_to_address_test_uncompressed(self):
+    #     k = PrivateKey.from_wif(data['wif']['test_uncompress'])
+    #     assert k.to_address().to_string() == data['address']['test_uncompress']

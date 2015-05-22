@@ -3,6 +3,7 @@ from urlparse import urlparse, parse_qsl
 
 from bitforge import Address, Unit
 
+
 class URI(object):
 
     @staticmethod
@@ -49,7 +50,8 @@ class URI(object):
             query['amount'] = self.amount.btc
         for key in ['message', 'label', 'r']:
             value = getattr(self, key, False)
-            if value: query[key] = value
+            if value:
+                query[key] = value
 
         query = urlencode(query)
         return 'bitcoin:' + self.address.to_string() + ('?' + query if query else '')
