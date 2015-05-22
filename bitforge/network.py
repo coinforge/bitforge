@@ -29,13 +29,14 @@ BaseNetwork = collections.namedtuple('Network', [
     'aliases',  # All the network aliases
 
     # Cryptography parameters
+    # WARNING: only curves over prime fields are currently supported
     'curve',  # Elliptic curve used for the crypto
     'hash_function',  # Signature hashing function
 
     # Serialization magic numbers
-    'pubkeyhash',
     'wif_prefix',  # Byte prefix used to identify the network in the WIF encoding
-    'scripthash',
+    'pubkey_hash_prefix',  # Byte prefix used for P2PKH addresses
+    'script_hash_prefix',  # Byte prefix used for P2SH addresses
     'hd_public_key',
     'hd_private_key',
     'magic',
@@ -49,7 +50,12 @@ BaseNetwork = collections.namedtuple('Network', [
 class Network(BaseNetwork):
     """Parameters of a Bitcoin-compatible network."""
 
-    UNIQUE_FIELDS = ['name', 'wif_prefix']
+    UNIQUE_FIELDS = [
+        'name',
+        'wif_prefix',
+        'pubkey_hash_prefix',
+        'script_hash_prefix',
+    ]
 
     _networks = []
     _networks_by_name = {}
@@ -90,6 +96,16 @@ class Network(BaseNetwork):
                 if getattr(other, field) == getattr(network, field):
                     raise InvalidNetwork(field, getattr(network, field))
 
+        # Enforce uniqueness of the address prefixes
+        for other in cls._networks:
+            if other.pubkey_hash_prefix == network.script_hash_prefix:
+                raise InvalidNetwork('address prefix', network.script_hash_prefix)
+
+            if other.script_hash_prefix == network.pubkey_hash_prefix:
+                raise InvalidNetwork('address prefix', network.pubkey_hash_prefix)
+
+        cls._networks.append(network)
+
         # Enforce uniqueness of the network aliases
         for name in [network.name] + network.aliases:
             if name in cls._networks_by_name:
@@ -108,11 +124,11 @@ class Network(BaseNetwork):
 testnet = Network(
     name = 'testnet',
     aliases = [],
-    curve = ec.SECP256K1,
-    hash_function = hashes.SHA256,
-    pubkeyhash = 111,
+    curve = ec.SECP256K1(),
+    hash_function = hashes.SHA256(),
     wif_prefix = 239,
-    scripthash = 196,
+    pubkey_hash_prefix = 111,
+    script_hash_prefix = 196,
     hd_public_key = 0x043587cf,
     hd_private_key = 0x04358394,
     magic = 0x0b110907,
@@ -129,11 +145,11 @@ testnet = Network(
 default = livenet = Network(
     name = 'livenet',
     aliases = ['mainnet', 'default'],
-    curve = ec.SECP256K1,
-    hash_function = hashes.SHA256,
-    pubkeyhash = 0x00,
+    curve = ec.SECP256K1(),
+    hash_function = hashes.SHA256(),
     wif_prefix = 0x80,
-    scripthash = 0x05,
+    pubkey_hash_prefix = 0x00,
+    script_hash_prefix = 0x05,
     hd_public_key = 0x0488b21e,
     hd_private_key = 0x0488ade4,
     magic = 0xf9beb4d9,

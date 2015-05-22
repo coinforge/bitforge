@@ -1,84 +1,155 @@
 import collections
-from utils.secp256k1 import generator_secp256k1
-import network, utils
-from network import Network
-from address import Address
-from errors import *
-from encoding import *
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+
+from bitforge import address, encoding, error, network, tools
 
 
-def find_network(value, attr = 'name'):
-    try:
-        return Network.get_by_field(attr, value)
-    except:
-        raise PublicKey.UnknownNetwork(attr, value)
+# Magic numbers for the SEC1 public key format (TODO: shouldn't be here!)
+SEC1_MAGIC_COMPRESSED_0 = 2
+SEC1_MAGIC_COMPRESSED_1 = 3
+SEC1_MAGIC_NOT_COMPRESSED = 4
 
 
-BasePublicKey = collections.namedtuple('PublicKey',
-    ['pair', 'network', 'compressed']
-)
+class Error(error.BitforgeError):
+    pass
+
+
+class InvalidPoint(Error):
+    """Invalid key (the point represented by the key is not on the curve)"""
+
+
+class InvalidEncoding(Error):
+    pass
+
+
+BasePublicKey = collections.namedtuple('PublicKey', [
+    'key',  # Elliptic curve public key
+    'network',  # Bitcoin-compatible network
+    'compressed',  # Whether the key should be serialized in compressed format
+])
+
 
 class PublicKey(BasePublicKey):
+    """Bitcoin public key."""
 
-    class Error(BitforgeError):
-        pass
+    def __new__(cls, key, network=network.default, compressed=True):
+        """Create a Bitcoin public key from an EC public key."""
 
-    class InvalidPair(Error, ObjectError):
-        "The PublicKey pair {object} is invalid (not a point of the curve)"
+        return super(PublicKey, cls).__new__(cls, key, network, compressed)
 
-    class UnknownNetwork(Error, Network.UnknownNetwork):
-        "No network for PublicKey with an attribute '{key}' of value {value}"
+    @classmethod
+    def from_point(cls, x, y, network=network.default, compressed=True, backend=default_backend()):
+        """Create a public key from its point coordinates.
 
-    class InvalidBinary(Error, StringError):
-        "The buffer {string} is not in any recognized format"
+        A public key is a point on an elliptic curve, i.e. a pair (x, y) that
+        satisfies the curve equation.
+        """
 
-    class InvalidHex(Error, InvalidHex):
-        "The PublicKey string {string} is not valid hexadecimal"
+        public_numbers = ec.EllipticCurvePublicNumbers(x, y, network.curve)
 
-
-    def __new__(cls, pair, network = network.default, compressed = True):
-        if not utils.ecdsa.is_public_pair_valid(generator_secp256k1, pair):
-            raise PublicKey.InvalidPair(pair)
-
-        return super(PublicKey, cls).__new__(cls, pair, network, compressed)
-
-    @staticmethod
-    def from_private_key(privkey):
-        pair = utils.public_pair_for_secret_exponent(
-            utils.generator_secp256k1, privkey.secret
-        )
-
-        # The constructor will validate the pair
-        return PublicKey(pair, privkey.network, privkey.compressed)
-
-    @staticmethod
-    def from_bytes(bytes, network = network.default):
         try:
-            pair       = utils.encoding.sec_to_public_pair(bytes)
-            compressed = utils.encoding.is_sec_compressed(bytes)
-        except:
-            raise PublicKey.InvalidBinary(bytes)
+            key = public_numbers.public_key(backend)
+        except ValueError:
+            raise InvalidPoint()
 
-        return PublicKey(pair, network, compressed)
+        return cls(key, network, compressed)
 
-    @staticmethod
-    def from_hex(string, network = network.default):
+    @classmethod
+    def from_bytes(cls, data, network=network.default, backend=default_backend()):
+        """Create a public key from its raw binary encoding (in SEC1 format).
+
+        For more info on this format, see:
+
+        http://www.secg.org/sec1-v2.pdf, section 2.3.4
+        """
+
+        data = bytearray(data)
+
+        # A public key is a point (x, y) in the elliptic curve, and each
+        # coordinate is represented by a unsigned integer of key_size bytes
+        key_size = tools.elliptic_curve_key_size(network.curve)
+
+        # The first byte determines whether the key is compressed
         try:
-            bytes = decode_hex(string)
-        except InvalidHex:
-            raise PublicKey.InvalidHex(string)
+            prefix = data.pop(0)
 
-        return PublicKey.from_bytes(bytes, network)
+        except IndexError:
+            raise InvalidEncoding('Invalid key length (buffer is empty)')
 
+        # If the key is compressed-encoded, only the x coordinate is present
+        compressed = True if len(data) == key_size else False
+
+        if not compressed and len(data) != 2 * key_size:
+            raise InvalidEncoding('Invalid key length')
+
+        # The first key_size bytes after the prefix are the x coordinate
+        x = encoding.b2i_bigendian(bytes(data[:key_size]))
+
+        if compressed:
+            # If the key is compressed, the y coordinate should be computed
+
+            if prefix == SEC1_MAGIC_COMPRESSED_0:
+                y_parity = 0
+            elif prefix == SEC1_MAGIC_COMPRESSED_1:
+                y_parity = 1
+            else:
+                raise InvalidEncoding('Invalid prefix for compressed key')
+
+            y = tools.ec_public_y_from_x_and_curve(x, y_parity, network.curve)
+            if y is None:
+                raise InvalidPoint()
+        else:
+            # If the key isn't compressed, the last key_size bytes are the y
+            # coordinate
+
+            if prefix != SEC1_MAGIC_NOT_COMPRESSED:
+                raise InvalidEncoding('Invalid prefix for non-compressed key')
+
+            y = encoding.b2i_bigendian(bytes(data[key_size:]))
+
+        return cls.from_point(x, y, network, compressed, backend)
+
+    def address(self, backend=default_backend()):
+        """TODO"""
+
+        SHA256 = hashes.Hash(hashes.SHA256(), backend)
+        SHA256.update(self.to_bytes())
+
+        RIPEMD160 = hashes.Hash(hashes.RIPEMD160, backend)
+        RIPEMD160.update(SHA256.finalize())
+
+        digest = RIPEMD160.finalize()
+
+        return address.Address(digest, self.network, address.Type.PublicKey)
 
     def to_bytes(self):
-        return utils.encoding.public_pair_to_sec(self.pair, self.compressed)
+        """TODO"""
 
-    def to_hex(self):
-        return binascii.hexlify(self.to_bytes())
+        public_numbers = self.key.public_numbers()
+        key_size = tools.elliptic_curve_key_size(self.network.curve)
 
-    def to_address(self):
-        return Address.from_public_key(self)
+        prefix = SEC1_MAGIC_NOT_COMPRESSED
+
+        if self.compressed:
+            if public_numbers.y % 2 == 0:
+                prefix = SEC1_MAGIC_COMPRESSED_0
+            else:
+                prefix = SEC1_MAGIC_COMPRESSED_1
+
+        data = bytearray()
+        data.append(prefix)
+
+        x = encoding.i2b_bigendian(public_numbers.x, key_size)
+        data.extend(x)
+
+        if not self.compressed:
+            y = encoding.i2b_bigendian(public_numbers.y, key_size)
+            data.extend(y)
+
+        return bytes(data)
 
     def __repr__(self):
         return "<PublicKey: %s, network: %s>" % (self.to_hex(), self.network.name)

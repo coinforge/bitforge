@@ -1,120 +1,135 @@
-import binascii, collections
-from enum import Enum
+import collections
 
-import network, utils
-from network import Network
-from encoding import *
-from errors import *
-# from script import Script
+import enum
+
+from bitforge import encoding, error, network
 
 
-BaseAddress = collections.namedtuple('Address', ['phash', 'network', 'type'])
+class Type(enum.Enum):
+    PublicKey = 'pubkey_hash'
+    Script    = 'script_hash'
+
+
+class Error(error.BitforgeError):
+    pass
+
+
+class InvalidEncoding(Error):
+    pass
+
+
+class InvalidHashLength(Error, error.StringError):
+    "The address hash {string} should be 20 bytes long, not {length}"
+
+
+class InvalidType(Error, error.ObjectError):
+    "{object} is not a valid address type"
+
+
+BaseAddress = collections.namedtuple('Address', [
+    'hash',
+    'type',
+    'network',
+])
+
 
 class Address(BaseAddress):
+    """Bitcoin address."""
 
-    class Type(Enum):
-        PublicKey = 'pubkeyhash'
-        Script    = 'scripthash'
+    def __new__(cls, hash, type=Type.PublicKey, network=network.default):
+        """TODO"""
 
-    class Error(BitforgeError):
-        pass
+        if not isinstance(type, Type):
+            raise InvalidType(type)
 
-    class UnknownNetwork(Error, Network.UnknownNetwork):
-        "No network for Address with an attribute '{key}' of value {value}"
+        if len(hash) != 20:
+            raise InvalidHashLength(hash)
 
-    class InvalidVersion(Error, NumberError):
-        "Failed to detect Address type and network from version number {number}"
+        return super(Address, cls).__new__(cls, hash, type, network)
 
-    class InvalidBase58h(Error, InvalidBase58h):
-        "The Address string {string} is not valid base58/check"
+    @classmethod
+    def from_string(cls, string):
+        """TODO"""
 
-    class InvalidHex(Error, InvalidHex):
-        "The Address string {string} is not valid hexadecimal"
-
-    class InvalidHashLength(Error, StringError):
-        "The address hash {string} should be 20 bytes long, not {length}"
-
-    class InvalidBinaryLength(Error, StringError):
-        "The binary address {string} should be 21 bytes long, not {length}"
-
-    class InvalidType(Error, ObjectError):
-        "Address type {object} is not an instance of Address.Type"
-
-
-    def __new__(cls, phash, network = network.default, type = Type.PublicKey):
-        if not isinstance(type, Address.Type):
-            raise Address.InvalidType(type)
-
-        if len(phash) != 20:
-            raise Address.InvalidHashLength(phash)
-
-        return super(Address, cls).__new__(cls, phash, network, type)
-
-    @staticmethod
-    def from_string(string):
         try:
-            bytes = decode_base58h(string)
-        except InvalidBase58h:
-            raise Address.InvalidBase58h(string)
+            data = encoding.a2b_base58check(string)
 
-        return Address.from_bytes(bytes)
+        except encoding.InvalidEncoding as e:
+            raise InvalidEncoding(e.message)
 
-    @staticmethod
-    def from_bytes(bytes):
-        if len(bytes) != 21:
-            raise Address.InvalidBinaryLength(bytes)
+        return cls.from_bytes(data)
 
-        network, type = Address.classify_bytes(bytes)
+    @classmethod
+    def from_bytes(cls, data):
+        """TODO"""
 
-        return Address(bytes[1:], network, type)
+        if len(data) != 21:
+            raise InvalidEncoding('Invalid address length')
 
-    @staticmethod
-    def from_hex(string):
+        type_, network_ = cls.classify_bytes(data)
+
+        return cls(data[1:], type_, network_)
+
+    @classmethod
+    def from_hex(cls, string):
+        """TODO"""
+
         try:
-            bytes = decode_hex(string)
-        except InvalidHex:
-            raise Address.InvalidHex(string)
+            data = encoding.a2b_hex(string)
 
-        return Address.from_bytes(bytes)
+        except encoding.InvalidEncoding as e:
+            raise InvalidEncoding(e.message)
 
-    @staticmethod
-    def classify_bytes(bytes):
-        version = decode_int(bytes[0])
+        return cls.from_bytes(data)
 
-        network = Network.get_by_field('pubkeyhash', version, raises = False)
-        if network is not None:
-            return (network, Address.Type.PublicKey)
+    @classmethod
+    def classify_bytes(cls, data):
+        """TODO"""
 
-        network = Network.get_by_field('scripthash', version, raises = False)
-        if network is not None:
-            return (network, Address.Type.Script)
+        data = bytearray(data)
+        version = data[0]
 
-        raise Address.InvalidVersion(version)
+        network_ = network.Network.get_by_field('pubkey_hash_prefix', version, raises=False)
+        if network_ is not None:
+            return (Type.PublicKey, network_)
 
-    @staticmethod
-    def from_public_key(pubkey):
-        phash = ripemd160(sha256(pubkey.to_bytes()))
-        return Address(phash, pubkey.network, Address.Type.PublicKey)
+        network_ = network.Network.get_by_field('script_hash_prefix', version, raises=False)
+        if network_ is not None:
+            return (Type.Script, network_)
+
+        raise InvalidEncoding('Invalid version number')
+
+    @classmethod
+    def from_public_key(cls, pubkey):
+        """TODO"""
+
+        return pubkey.address()
 
     def to_bytes(self):
+        """TODO"""
+
         version = getattr(self.network, self.type.value)
-        return chr(version) + self.phash
+        return chr(version) + self.hash
 
     def to_string(self):
-        return encode_base58h(self.to_bytes())
+        """TODO"""
+
+        return encoding.b2a_base58check(self.to_bytes())
 
     def to_hex(self):
-        return encode_hex(self.to_bytes())
+        """TODO"""
+
+        return encoding.b2a_hex(self.to_bytes())
 
     # TODO: all keys should be from the same network
-    # @staticmethod
+    # @classmethod
     # def from_public_keys(pubkeys, threshold):
     #     return Address.from_script(
     #         Script.buildMultisigOut(pubkeys, threshold),
     #         pubkeys[0].network
     #     )
 
-    # @staticmethod
+    # @classmethod
     # def from_script(script, network = networks.default):
     #     if not isinstance(script, Script):
     #         raise ValueError('Expected instance of Script, not %s' % script)

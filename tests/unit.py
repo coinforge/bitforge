@@ -2,7 +2,7 @@ from bitforge.unit import Unit
 
 
 class TestUnit:
-    
+
     def test_btc_accessors(self):
         u = Unit(btc = 1.2)
         assert u.btc == 1.2
