@@ -26,12 +26,16 @@ def decode_base58h(string):
         raise InvalidBase58h(string)
 
 
-def encode_int(integer, big_endian = True):
+def encode_int(integer, big_endian = True, length = None):
     bytes = bytearray()
 
     while integer > 0:
         bytes.append(integer & 0xff)
         integer >>= 8
+
+    if length is not None:
+        zeros = chr(0) * length # TODO if number can't fit in length, raise
+        bytes = (bytes + zeros)[:length]
 
     if big_endian:
         bytes.reverse()
@@ -50,6 +54,39 @@ def decode_int(bytes, big_endian = True):
         integer += ord(char)
 
     return integer
+
+
+def encode_varint(integer):
+    # TODO check integer is a postive number
+    if integer < 253:
+        return encode_int(integer)
+
+    elif integer <= 0xFFFF:
+        return chr(253) + encode_int(integer, length = 2, big_endian = False)
+
+    elif integer <= 0xFFFFFFFF:
+        return chr(254) + encode_int(integer, length = 4, big_endian = False)
+
+    else:
+        return chr(255) + encode_int(integer, length = 8, big_endian = False)
+
+  # if (n < 253) {
+  #   buf = new Buffer(1);
+  #   buf.writeUInt8(n, 0);
+  # } else if (n < 0x10000) {
+  #   buf = new Buffer(1 + 2);
+  #   buf.writeUInt8(253, 0);
+  #   buf.writeUInt16LE(n, 1);
+  # } else if (n < 0x100000000) {
+  #   buf = new Buffer(1 + 4);
+  #   buf.writeUInt8(254, 0);
+  #   buf.writeUInt32LE(n, 1);
+  # } else {
+  #   buf = new Buffer(1 + 8);
+  #   buf.writeUInt8(255, 0);
+  #   buf.writeInt32LE(n & -1, 1);
+  #   buf.writeUInt32LE(Math.floor(n / 0x100000000), 5);
+  # }
 
 
 def encode_hex(bytes):

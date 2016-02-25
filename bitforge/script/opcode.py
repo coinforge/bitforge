@@ -1,6 +1,7 @@
 import sys, inspect
 from numbers import Number
-from errors import *
+
+from bitforge.errors import *
 
 
 # Below is a list of all *named* opcodes. Their values, integers in the

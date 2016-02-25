@@ -1,9 +1,9 @@
 import pytest, inspect
 from pytest import raises, fixture, fail
 
-from bitforge import opcode
 from bitforge.script import Script, Instruction
-from bitforge.opcode import *
+from bitforge.script.opcode import *
+import bitforge.script.opcode as opcode_module
 from bitforge.encoding import *
 from bitforge.tools import Buffer
 
@@ -47,7 +47,7 @@ class TestScript:
 
     def test_binary_all_nonpush_opcodes(self):
         opcodes = []
-        for name, value in inspect.getmembers(opcode):
+        for name, value in inspect.getmembers(opcode_module):
             if isinstance(value, Opcode) and not value.is_push():
                 opcodes.append(value)
 

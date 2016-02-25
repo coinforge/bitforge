@@ -1,4 +1,6 @@
 from errors import *
+from encoding import *
+
 
 class Buffer(bytearray):
 

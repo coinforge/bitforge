@@ -1,4 +1,4 @@
-import random, struct, binascii, collections
+import random, binascii, collections
 import networks, utils
 from errors import *
 from pubkey import PublicKey
