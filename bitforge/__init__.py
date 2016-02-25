@@ -7,9 +7,9 @@ from hdprivkey import HDPrivateKey
 from hdpubkey import HDPublicKey
 
 from address import Address
-from script import Script, Opcode
+from script import Script, Opcode, Instruction
 
-from transaction import Input, Output
+from transaction import Input, Output, Transaction
 
 from unit import Unit
 from uri import URI

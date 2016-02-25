@@ -38,7 +38,7 @@ class Script(object):
 
 
     @staticmethod
-    def build(*schematic):
+    def compile(schematic):
         instructions = []
 
         for item in schematic:
@@ -57,26 +57,27 @@ class Script(object):
                 else:
                     args = (Opcode(item[0]), item[1])
 
+            # TODO catch-all else exception
             instructions.append(Instruction(*args))
 
         return Script(instructions)
 
     @staticmethod
     def pay_to_address_out(address):
-        return Script.build(
+        return Script.compile([
             OP_DUP,
             OP_HASH160,
             address.phash,
             OP_EQUALVERIFY,
             OP_CHECKSIG
-        )
+        ])
 
     @staticmethod
     def pay_to_address_in(pubkey, signature):
-        return Script.build(
+        return Script.compile([
             signature.to_bytes(),
             pubkey.to_bytes()
-        )
+        ])
     #
     #       s.add(Opcode.OP_DUP)
     # .add(Opcode.OP_HASH160)
