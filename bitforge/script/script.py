@@ -75,7 +75,7 @@ class Script(object):
     @staticmethod
     def pay_to_address_in(pubkey, signature):
         return Script.compile([
-            signature.to_bytes(),
+            signature,
             pubkey.to_bytes()
         ])
     #

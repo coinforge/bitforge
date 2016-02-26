@@ -1,5 +1,5 @@
 import random, binascii, collections
-import networks, utils
+import networks, utils, ecdsa
 from errors import *
 from pubkey import PublicKey
 from address import Address
@@ -36,10 +36,10 @@ class PrivateKey(BasePrivateKey):
         "No network for PrivateKey with an attribute '{key}' of value {value}"
 
     class InvalidWifLength(Error, StringError):
-        "The WIF {string} should be 33 (uncompressed) or 34 (compressed) bytes long, not {length}"
+        "The PrivateKey WIF {string} should be 33 (uncompressed) or 34 (compressed) bytes long, not {length}"
 
     class InvalidCompressionByte(Error, StringError):
-        "The length of the WIF {string} suggests it's compressed, but it doesn't end in '\1'"
+        "The length of the PrivateKey WIF {string} suggests it's compressed, but it doesn't end in '\1'"
 
     class InvalidBase58h(Error, InvalidBase58h):
         "The PrivateKey string {string} is not valid base58/check"
@@ -48,7 +48,7 @@ class PrivateKey(BasePrivateKey):
         "The PrivateKey string {string} is not valid hexadecimal"
 
     class InvalidBinaryLength(Error, StringError):
-        "The binary secret {string} should be 32 bytes long, not {length}"
+        "The PrivateKey's binary secret {string} should be 32 bytes long, not {length}"
 
 
     def __new__(cls, secret = None, network = networks.default, compressed = True):
@@ -112,7 +112,7 @@ class PrivateKey(BasePrivateKey):
         return encode_base58h(network_byte + secret_bytes + compressed_byte)
 
     def to_bytes(self):
-        return encode_int(self.secret)
+        return encode_int(self.secret, length = 32)
 
     def to_hex(self):
         return encode_hex(self.to_bytes())
@@ -122,6 +122,16 @@ class PrivateKey(BasePrivateKey):
 
     def to_address(self):
         return Address.from_public_key(self.to_public_key())
+
+    def sign(self, message):
+        signing_key = ecdsa.SigningKey.from_secret_exponent(self.secret, curve = ecdsa.SECP256k1)
+        return signing_key.sign_digest(message, sigencode = ecdsa.util.sigencode_der)
+
+    def verify(self, signature, message):
+        signing_key   = ecdsa.SigningKey.from_secret_exponent(self.secret, curve = ecdsa.SECP256k1)
+        verifying_key = signing_key.get_verifying_key()
+
+        return verifying_key.verify(signature, message)
 
     def __repr__(self):
         return "<PrivateKey: %s, network: %s>" % (self.to_hex(), self.network.name)

@@ -39,3 +39,6 @@ class Input(BaseInput):
         buffer.write(encode_int(self.seq_number, length = 4, big_endian = False))
 
         return str(buffer)
+
+    def with_script(self, script):
+        return Input(self.tx_id, self.txo_index, script, self.seq_number)
