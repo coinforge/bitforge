@@ -5,7 +5,7 @@ from bitforge.errors import *
 from bitforge.tools import Buffer
 
 
-FINAL_SEQ_NUMBER = 4294967295
+FINAL_SEQ_NUMBER = 0xFFFFFFFF
 
 
 BaseInput = collections.namedtuple('Input',

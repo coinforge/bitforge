@@ -178,8 +178,15 @@ class Script(object):
 #
 #         self.instructions.append(Instruction(opcode, length, bytes))
 #
+
+    def __repr__(self):
+        return str(self.instructions)
+
     def to_bytes(self):
         return ''.join(i.to_bytes() for i in self.instructions)
+
+    def to_hex(self):
+        return encode_hex(self.to_bytes())
 #
 #     def to_string(self):
 #         return ' '.join(map(str, self.instructions))

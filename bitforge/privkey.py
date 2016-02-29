@@ -125,13 +125,13 @@ class PrivateKey(BasePrivateKey):
 
     def sign(self, message):
         signing_key = ecdsa.SigningKey.from_secret_exponent(self.secret, curve = ecdsa.SECP256k1)
-        return signing_key.sign_digest(message, sigencode = ecdsa.util.sigencode_der)
+        return signing_key.sign_digest(message, sigencode = ecdsa.util.sigencode_der_canonize)
 
     def verify(self, signature, message):
         signing_key   = ecdsa.SigningKey.from_secret_exponent(self.secret, curve = ecdsa.SECP256k1)
         verifying_key = signing_key.get_verifying_key()
 
-        return verifying_key.verify(signature, message)
+        return verifying_key.verify(signature, message, sigdecode = ecdsa.util.sigdecode_der)
 
     def __repr__(self):
         return "<PrivateKey: %s, network: %s>" % (self.to_hex(), self.network.name)
