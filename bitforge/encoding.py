@@ -27,6 +27,9 @@ def decode_base58h(string):
 
 
 def encode_int(integer, big_endian = True, length = None):
+    if integer == 0:
+        return chr(0) if length is None else chr(0) * length
+
     bytes = bytearray()
 
     while integer > 0:
