@@ -105,3 +105,44 @@ class Transaction(BaseTransaction):
         )
 
         return self.with_inputs(new_inputs)
+
+
+    def signed_multisig(self, txi_index, privkeys, redeem_script):
+        simplified_inputs = (
+            i.with_script(redeem_script) if index == txi_index else i.with_script('')
+            for index, i in enumerate(self.inputs)
+        )
+
+        simplified_transaction = self.with_inputs(simplified_inputs)
+
+        payload = simplified_transaction.to_bytes()
+        payload += encode_int(SIGHASH_ALL, length = 4, big_endian = False)
+        payload = sha256(sha256(payload))
+
+        signatures = [
+            privkey.sign(payload) + chr(SIGHASH_ALL)
+            for privkey in privkeys
+        ]
+
+        from bitforge.signature import validate_signature
+        if not all(map(validate_signature, signatures)):
+            raise Exception(signatures)
+
+        signed_input_script = Script.pay_to_script_in(
+            script     = redeem_script,
+            signatures = signatures
+        )
+
+        # print ''
+        # print 'SIGNED IN SCRIPT', signed_input_script
+        # print ''
+        # print signed_input_script.to_string()
+        # print ''
+        # print ''
+
+        new_inputs = (
+            i.with_script(signed_input_script) if index == txi_index else i
+            for index, i in enumerate(self.inputs)
+        )
+
+        return self.with_inputs(new_inputs)

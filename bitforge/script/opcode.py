@@ -223,7 +223,7 @@ class Opcode(object):
     @staticmethod
     def for_number(n):
         if 0 <= n <= 16:
-            return OP_0 if n == 0 else Opcode(Opcode.OP_1.value + n - 1)
+            return OP_0 if n == 0 else Opcode(OP_1.number + n - 1)
         else:
             raise ValueError("Expected number in range [0, 16], got %d" % n)
 

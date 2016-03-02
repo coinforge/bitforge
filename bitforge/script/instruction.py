@@ -38,7 +38,7 @@ class Instruction(BaseInstruction):
             expect = Opcode.data_length_max(opcode)
 
             if (opcode.is_const_push() and length != expect) or \
-               (opcode.is_var_push and not (0 <= length <= expect)):
+               (opcode.is_var_push() and not (0 <= length <= expect)):
                 raise Instruction.InvalidDataLength(opcode, length, expect)
 
         elif data is not None:

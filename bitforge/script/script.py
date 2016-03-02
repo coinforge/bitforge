@@ -78,6 +78,31 @@ class Script(object):
             signature,
             pubkey.to_bytes()
         ])
+
+    @staticmethod
+    def pay_to_script_out(script):
+        return Script.compile([
+            OP_HASH160,
+            script.to_hash(),
+            OP_EQUAL
+        ])
+
+    @staticmethod
+    def pay_to_script_in(script, signatures):
+        return Script.compile([OP_0] + signatures + [script.to_bytes()])
+
+    @staticmethod
+    def redeem_multisig(pubkeys, min_signatures):
+        return Script.compile(
+            [ Opcode.for_number(min_signatures) ] +
+            [ pubkey.to_bytes() for pubkey in pubkeys ] +
+            [ Opcode.for_number(len(pubkeys)) ] +
+            [ OP_CHECKMULTISIG ]
+        )
+
+
+        # OP_0 here for historical reasons, related to a bug in BTC Core
+
     #
     #       s.add(Opcode.OP_DUP)
     # .add(Opcode.OP_HASH160)
@@ -187,6 +212,12 @@ class Script(object):
 
     def to_hex(self):
         return encode_hex(self.to_bytes())
+
+    def to_hash(self):
+        return ripemd160(sha256(self.to_bytes()))
+
+    def to_string(self):
+        return '\n'.join(i.to_string() for i in self.instructions)
 #
 #     def to_string(self):
 #         return ' '.join(map(str, self.instructions))

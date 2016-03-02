@@ -98,6 +98,11 @@ class Address(BaseAddress):
         phash = ripemd160(sha256(pubkey.to_bytes()))
         return Address(phash, pubkey.network, Address.Type.PublicKey)
 
+    @staticmethod
+    def from_script(script, network = networks.default):
+        phash = ripemd160(sha256(script.to_bytes()))
+        return Address(phash, network, Address.Type.Script)
+
     def to_bytes(self):
         version = getattr(self.network, self.type.value)
         return chr(version) + self.phash
