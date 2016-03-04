@@ -203,6 +203,12 @@ class Script(object):
 #
 #         self.instructions.append(Instruction(opcode, length, bytes))
 #
+    def is_push_only(self):
+        """
+        :returns: if the script is only composed of data pushing opcodes or small int opcodes (OP_0, OP_1, ..., OP_16)
+        """
+        return all(lambda i: i.opcode <= Opcode.OP_16, self.instructions)
+
 
     def __repr__(self):
         return str(self.instructions)
