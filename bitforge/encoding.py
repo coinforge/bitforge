@@ -116,8 +116,16 @@ def sha256(bytes):
     return hashlib.sha256(bytes).digest()
 
 
+def sha1(bytes):
+    return hashlib.sha1(bytes).digest()
+
+
 def ripemd160(bytes):
     return hashlib.new('ripemd160', bytes).digest()
+
+
+def hash160(bytes):
+    return ripemd160(sha256(bytes)).digest()
 
 
 def decode_script_number(bytes, f_require_minimal = False, size = 4):
