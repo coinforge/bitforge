@@ -101,7 +101,7 @@ class ScriptInput(Input):
         # The placeholder Script for a ScriptInput (Pay-to-Script, in raw
         # Bitcoin terms) is the embedded (redeeming) Script itself.
 
-        return super(MultisigInput, cls).__new__(cls, tx_id, txo_index, script, seq_number)
+        return super(ScriptInput, cls).__new__(cls, tx_id, txo_index, script, seq_number)
 
     def signed(self, privkeys, payload):
         # Signing a ScriptInput requires embedding the redeem Script (already

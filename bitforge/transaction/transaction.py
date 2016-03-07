@@ -2,9 +2,10 @@ import collections
 
 from bitforge.encoding import *
 from bitforge.errors import *
-from bitforge.tools import Buffer
-from bitforge.script import Script
+from bitforge.tools import Buffer, enforce_all, instance_of
 from bitforge.signature import SIGHASH_ALL
+from bitforge.script import Script
+from bitforge.transaction import Input, Output
 
 
 BaseTransaction = collections.namedtuple('Transaction',
@@ -14,10 +15,37 @@ BaseTransaction = collections.namedtuple('Transaction',
 
 class Transaction(BaseTransaction):
 
+    class Error(BitforgeError):
+        pass
+
+    class NoInputs(Error):
+        "No Inputs were given to create this Transaction"
+
+    class NoOutputs(Error):
+        "No Outputs were given to create this Transaction"
+
+    class NotAnInput(Error, ObjectError):
+        "Transaction expected instances of Input, got {object} instead"
+
+    class NotAnOutput(Error, ObjectError):
+        "Transaction expected instances of Input, got {object} instead"
+
+    class InvalidLockTime(Error, NumberError):
+        "Transaction lock_time must be between 0 and 4294967295 (2^32 - 1), not {number}"
+
+
     def __new__(cls, inputs, outputs, lock_time = 0, version = 1):
-        # TODO validation
-        inputs  = list(inputs)
+        inputs = list(inputs)
         outputs = list(outputs)
+
+        if len(inputs) == 0: raise cls.NoInputs()
+        enforce_all(inputs, instance_of(Input), cls.NotAnInput)
+
+        if len(outputs) == 0: raise cls.NoOutputs()
+        enforce_all(outputs, instance_of(Output), cls.NotAnOutput)
+
+        if not (0 <= lock_time <= 0xFFFFFFFF):
+            raise cls.InvalidLockTime(lock_time)
 
         return super(Transaction, cls).__new__(cls, inputs, outputs, lock_time, version)
 
@@ -102,3 +130,22 @@ class Transaction(BaseTransaction):
         )
 
         return self.with_inputs(new_inputs) # voila!
+
+
+    @classmethod
+    def _validate_inputs(objects):
+        if len(objects) == 0:
+            raise cls.NoInputs()
+
+        for object in objects:
+            if not isinstance(object, Input):
+                raise cls.NotAnInput(object)
+
+    @classmethod
+    def _validate_outputs(objects):
+        if len(objects) == 0:
+            raise cls.NoInputs()
+
+        for object in objects:
+            if not isinstance(object, Input):
+                raise cls.NotAnInput(object)
