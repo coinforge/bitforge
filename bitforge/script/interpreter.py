@@ -46,12 +46,71 @@ class Interpreter(object):
             self.errstr = 'SCRIPT_ERR_SIG_PUSHONLY'
             return False
 
+        # Evaluate script_sig
         if not self.evaluate():
             return False
 
-        # TODO: Missing other flag verifications
+        if self.flags & Interpreter.SCRIPT_VERIFY_P2SH:
+            stack_copy = list(this.stack)
 
-        return False
+        stack = self.stack
+        self.initialize()
+        self.script = script_pubkey
+        self.stack = stack
+        self.tx = tx or Transaction([], [])
+        self.nin = nin or 0
+        self.flags = flags or 0
+
+        # evaluate script_pubkey
+        if not self.evaluate():
+            return False
+
+        if len(self.stack) == 0:
+            self.errstr = 'SCRIPT_ERR_EVAL_FALSE_NO_RESULT'
+            return False
+
+        bytes = self.stack[-1]
+        if not Interpreter.cast_to_bool(bytes):
+            self.errstr = 'SCRIPT_ERR_EVAL_FALSE_IN_STACK'
+            return False
+
+        # Additional validation for spend-to-script-hash transactions:
+        if (self.flags & Interpreter.SCRIPT_VERIFY_P2SH) and script_sig.is_script_hash_out():
+            # script_sig must be literals-only or validation fails
+            if not script_sig.is_push_only():
+                self.errstr = 'SCRIPT_ERR_SIG_PUSHONLY'
+                return False
+
+            # stack_copy cannot be empty here, because if it was the
+            # P2SH  HASH <> EQUAL  script_pubkey would be evaluated with
+            # an empty stack and the EvalScript above would return false.
+            if len(stack_copy) == 0:
+                raise Exception('internal error - stack copy empty')
+
+            redeem_bytes = stack_copy[-1]
+            redeem_script = Script.from_bytes(redeem_bytes)
+            stack_copy = stack_copy[:-1]
+
+            self.initialize()
+            self.script = redeem_script
+            self.stack = stack_copy
+            self.tx = tx or Transaction([], [])
+            self.nin = nin or 0
+            self.flags = flags or 0
+
+            # Evaluate redeem_script
+            if not self.evaluate():
+                return False
+
+            if len(stack_copy) == 0:
+                self.errstr = 'SCRIPT_ERR_EVAL_FALSE_NO_P2SH_STACK'
+                return False
+
+            if not Interpreter.cast_to_bool(stack_copy[-1]):
+                self.errstr = 'SCRIPT_ERR_EVAL_FALSE_IN_P2SH_STACK'
+                return False
+
+        return True
 
     def evaluate(self):
         """
