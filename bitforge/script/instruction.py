@@ -46,6 +46,11 @@ class Instruction(BaseInstruction):
 
         return super(Instruction, cls).__new__(cls, opcode, data)
 
+    @staticmethod
+    def push_for(self, bytes):
+        opcode = Opcode.push_for(len(bytes))
+        return Instruction(opcode, bytes)
+
     def is_minimal_push(self):
         """
         Comes from bitcoind's script interpreter CheckMinimalPush function.
