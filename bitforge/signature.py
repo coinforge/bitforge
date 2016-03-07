@@ -1,8 +1,6 @@
-import collections
 
-from bitforge.encoding import *
-from bitforge.errors import *
-from bitforge.tools import Buffer
+
+SIGHASH_ALL = 0x01
 
 
 def validate_signature(sig):

@@ -63,7 +63,7 @@ class Script(object):
         return Script(instructions)
 
     @staticmethod
-    def pay_to_address_out(address):
+    def pay_to_pubkey_out(address):
         return Script.compile([
             OP_DUP,
             OP_HASH160,
@@ -73,7 +73,7 @@ class Script(object):
         ])
 
     @staticmethod
-    def pay_to_address_in(pubkey, signature):
+    def pay_to_pubkey_in(pubkey, signature):
         return Script.compile([
             signature,
             pubkey.to_bytes()

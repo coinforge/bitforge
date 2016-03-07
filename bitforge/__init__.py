@@ -9,7 +9,7 @@ from hdpubkey import HDPublicKey
 from address import Address
 from script import Script, Opcode, Instruction
 
-from transaction import Input, Output, Transaction
+from transaction import *
 
 from unit import Unit
 from uri import URI

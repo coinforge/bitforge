@@ -3,6 +3,7 @@ import collections
 from bitforge.encoding import *
 from bitforge.errors import *
 from bitforge.tools import Buffer
+from bitforge import Script
 
 
 BaseOutput = collections.namedtuple('Output',
@@ -30,3 +31,23 @@ class Output(BaseOutput):
         buffer.write(script)
 
         return str(buffer)
+
+
+class AddressOutput(Output):
+
+    def __new__(cls, amount, address):
+        script = Script.pay_to_pubkey_out(address)
+        return super(AddressOutput, cls).__new__(cls, amount, script)
+
+
+class ScriptOutput(Output):
+
+    def __new__(cls, amount, redeem_script):
+        script = Script.pay_to_script_out(redeem_script)
+        return super(ScriptOutput, cls).__new__(cls, amount, script)
+
+
+class MultisigOutput(ScriptOutput):
+    def __new__(cls, amount, pubkeys, min_signatures):
+        redeem_script = Script.redeem_multisig(pubkeys, min_signatures)
+        return super(MultisigOutput, cls).__new__(cls, amount, redeem_script)

@@ -135,32 +135,3 @@ class PrivateKey(BasePrivateKey):
 
     def __repr__(self):
         return "<PrivateKey: %s, network: %s>" % (self.to_hex(), self.network.name)
-
-
-
-def sigencode_bitcoin(r, s, order):
-    # The DER packaging format is a bit too versatile for Bitcoin, allowing
-    # different representations for the same data. We need to enforce a stricter
-    # format, and the `sigencode_der_canonize` function in `python-ecdsa` is
-    # not correct for all cases.
-
-    # So, we write the DER manually, with some ad-hoc encoding:
-    return encode_der_signature(r, s)
-
-
-def encode_der_signature(r, s):
-    rs_bytes  = encode_der_int(r) + encode_der_int(s)
-    rs_length = encode_int(len(rs_bytes))
-
-    return chr(48) + rs_length + rs_bytes
-
-
-def encode_der_int(n):
-    n_bytes = encode_int(n)
-
-    if ord(n_bytes[0]) >= 128: # negative number, we need to prefix with 0
-        n_bytes = chr(0) + n_bytes
-
-    n_length = encode_int(len(n_bytes))
-
-    return chr(2) + n_length + n_bytes
