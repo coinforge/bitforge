@@ -60,13 +60,28 @@ class Input(BaseInput):
         return Input(self.tx_id, self.txo_index, script, self.seq_number)
 
     def signed(self, privkeys, payload):
+        # Signing an Input requires knowledge of two things:
+        #
+        # 1. The placeholder Script that will be used in place of the signed one,
+        # to construct the actual signature (it can't sign itself)
+        #
+        # 2. The method with which to construct the final, signed Script
+        #
+        # By the time this method is invoked, the placeholder script (1) should
+        # already be waiting in our `script` property, but (2) we can't know
+        # about. See Input subclasses.
         raise UnknownSignatureMethod()
 
 
 class AddressInput(Input):
 
     def __new__(cls, tx_id, txo_index, address, seq_number = FINAL_SEQ_NUMBER):
+        # The placeholder Script for an AddressInput (Pay-to-Pubkey, in raw
+        # Bitcoin terms) is a copy of the UTXO Script from the previous
+        # transaction. Assuming that Output had a standard Pay-to-Pubkey Script,
+        # we don't need to actually fetch the data.
         placeholder_script = Script.pay_to_pubkey_out(address)
+
         return super(AddressInput, cls).__new__(cls, tx_id, txo_index, placeholder_script, seq_number)
 
     def signed(self, privkeys, payload):
@@ -82,8 +97,16 @@ class AddressInput(Input):
 
 
 class ScriptInput(Input):
+    def __new__(cls, tx_id, txo_index, script, seq_number = FINAL_SEQ_NUMBER):
+        # The placeholder Script for a ScriptInput (Pay-to-Script, in raw
+        # Bitcoin terms) is the embedded (redeeming) Script itself.
+
+        return super(MultisigInput, cls).__new__(cls, tx_id, txo_index, script, seq_number)
 
     def signed(self, privkeys, payload):
+        # Signing a ScriptInput requires embedding the redeem Script (already
+        # set as placeholder in our `script` property by the time this method
+        # is invoked) in a standard Pay-to-Script Script.
         signed_script = Script.pay_to_script_in(
             script     = self.script,
             signatures = [ pk.sign(payload) + chr(SIGHASH_ALL) for pk in privkeys ]
@@ -95,5 +118,9 @@ class ScriptInput(Input):
 class MultisigInput(ScriptInput):
 
     def __new__(cls, tx_id, txo_index, pubkeys, min_signatures, seq_number = FINAL_SEQ_NUMBER):
+        # There is nothing magical about a MultisigInput. All we need to do
+        # is construct the placeholder Script for the ScriptInput automatically,
+        # since we know the form it will take.
         placeholder_script = Script.redeem_multisig(pubkeys, min_signatures)
+
         return super(MultisigInput, cls).__new__(cls, tx_id, txo_index, placeholder_script, seq_number)

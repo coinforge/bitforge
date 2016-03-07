@@ -59,90 +59,46 @@ class Transaction(BaseTransaction):
         return Transaction(inputs, self.outputs, self.lock_time, self.version)
 
     def signed(self, privkeys, txi_index):
+        # A Transaction Input is signed in 4 steps:
+        #   1. Create a simplified Transaction without data from other Inputs
+        #   2. Sign the simplified Transaction data, discard it, keep the signature
+        #   3. Create a new Input including the signature
+        #   4. Build the signed Transaction, restoring data from other Inputs
+
+        # Let's go step by step.
+
+        # 1. Create a simplified version of the Transaction, where this Input
+        # Script is a placeholder (the signature can't sign itself), and all
+        # other Input scripts are empty (0 bytes). The placeholder should be
+        # there already, manually placed or auto-created by Input subclasses.
+
         simplified_inputs = (
-            input if i == txi_index else input.with_script('')
+            input.with_script('') if i != txi_index else input
             for i, input in enumerate(self.inputs)
         )
 
         simplified_transaction = self.with_inputs(simplified_inputs)
 
+        # 2. Write the payload we're going to sign, which is the serialization
+        # of the simplified transaction, with an extra 4 bytes for the signature
+        # type, all of that double-sha256'd:
+
         payload = simplified_transaction.to_bytes()
         payload += encode_int(SIGHASH_ALL, length = 4, big_endian = False)
         payload = sha256(sha256(payload))
 
+        # 3. Create the signed Input, making it sign itself using the provided
+        # PrivateKeys. Each Input subclass knows how to handle this process. The
+        # signed Input will loose the placeholder Script and get a real one.
+
         signed_input = self.inputs[txi_index].signed(privkeys, payload)
+
+        # 4. Build a new Transaction, restoring the other Input Scripts, and
+        # setting this Input to the new version including the signature:
 
         new_inputs = (
             signed_input if i == txi_index else input
             for i, input in enumerate(self.inputs)
         )
 
-        return self.with_inputs(new_inputs)
-
-
-    def signed_multisig(self, txi_index, privkeys, redeem_script):
-        simplified_inputs = (
-            i.with_script(redeem_script) if index == txi_index else i.with_script('')
-            for index, i in enumerate(self.inputs)
-        )
-
-        simplified_transaction = self.with_inputs(simplified_inputs)
-
-        payload = simplified_transaction.to_bytes()
-        payload += encode_int(SIGHASH_ALL, length = 4, big_endian = False)
-        payload = sha256(sha256(payload))
-
-        signatures = [
-            privkey.sign(payload) + chr(SIGHASH_ALL)
-            for privkey in privkeys
-        ]
-
-        from bitforge.signature import validate_signature
-        if not all(map(validate_signature, signatures)):
-            raise Exception(signatures)
-
-        signed_input_script = Script.pay_to_script_in(
-            script     = redeem_script,
-            signatures = signatures
-        )
-
-        # print ''
-        # print 'SIGNED IN SCRIPT', signed_input_script
-        # print ''
-        # print signed_input_script.to_string()
-        # print ''
-        # print ''
-
-        new_inputs = (
-            i.with_script(signed_input_script) if index == txi_index else i
-            for index, i in enumerate(self.inputs)
-        )
-
-        return self.with_inputs(new_inputs)
-
-
-        # A transaction is signed in 4 steps:
-        #   1. Create a simplified Transaction without data from other Inputs
-        #   2. Sign the simplified Transaction, discard it, keep the signature
-        #   3. Create the final Input Script for the signed Transaction
-        #   4. Build the signed Transaction, including data from other Inputs
-
-        # Let's go step by step.
-
-        # 1. Create a simplified version of the Transaction, where this Input
-        # Script should be a placeholder (the signature can't sign itself), and
-        # all other Input scripts are empty (0 bytes).
-
-        # NOTE: for Pay-to-Pubkey Inputs, the placeholder is the Script from
-        # the matching Output in the previous Transaction. for Pay-to-Script
-        # Inputs, it's the embedded redeem Script.
-
-        # 2. Write the payload we're going to sign, which is the serialization
-        # of the simplified transaction, with an extra 4 bytes for the signature
-        # type, all of that double-sha256'd:
-
-        # 3. Create the signed Input, asking it to sign itself using the provided
-        # PrivateKeys and
-
-        # 4. Build a new Transaction, restoring the other Input scripts, and
-        # setting this Input script to the new version including the signature:
+        return self.with_inputs(new_inputs) # voila!

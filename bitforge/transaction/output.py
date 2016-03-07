@@ -48,6 +48,7 @@ class ScriptOutput(Output):
 
 
 class MultisigOutput(ScriptOutput):
+
     def __new__(cls, amount, pubkeys, min_signatures):
         redeem_script = Script.redeem_multisig(pubkeys, min_signatures)
         return super(MultisigOutput, cls).__new__(cls, amount, redeem_script)
