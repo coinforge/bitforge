@@ -16,7 +16,11 @@ class Script(object):
 
     @staticmethod
     def from_bytes(bytes):
-        buffer       = Buffer(bytes)
+        buffer = Buffer(bytes)
+        return Script.from_buffer(buffer)
+
+    @staticmethod
+    def from_buffer(buffer):
         instructions = []
 
         while buffer:

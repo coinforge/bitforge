@@ -14,7 +14,6 @@ class Buffer(bytearray):
             self.remaining = remaining
             self.requested = requested
 
-
     def read(self, amount):
         if len(self) < amount:
             raise Buffer.InsufficientData(len(self), amount)
@@ -22,6 +21,21 @@ class Buffer(bytearray):
         ret = str(self[:amount])
         del self[:amount]
         return ret
+
+    def read_varint(self):
+        order = decode_int(self.read(1))
+
+        if order < 253:
+            return order # single-byte varint, value is as written
+
+        elif order == 253:
+            return decode_int(self.read(2), big_endian = False)
+
+        elif order == 254:
+            return decode_int(self.read(4), big_endian = False)
+
+        elif order == 255:
+            return decode_int(self.read(8), big_endian = False)
 
     def write(self, data):
         self.extend(data)

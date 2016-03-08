@@ -35,8 +35,8 @@ class Transaction(BaseTransaction):
 
 
     def __new__(cls, inputs, outputs, lock_time = 0, version = 1):
-        inputs = list(inputs)
-        outputs = list(outputs)
+        inputs = tuple(inputs)
+        outputs = tuple(outputs)
 
         if len(inputs) == 0: raise cls.NoInputs()
         enforce_all(inputs, instance_of(Input), cls.NotAnInput)
@@ -77,11 +77,11 @@ class Transaction(BaseTransaction):
     def to_hex(self):
         return encode_hex(self.to_bytes())
 
-    def get_raw_id(self):
+    def get_id_bytes(self):
         return sha256(sha256(self.to_bytes()))
 
     def get_id(self):
-        return encode_hex(self.get_raw_id())
+        return encode_hex(self.get_id_bytes())
 
     def with_inputs(self, inputs):
         return Transaction(inputs, self.outputs, self.lock_time, self.version)
@@ -132,20 +132,18 @@ class Transaction(BaseTransaction):
         return self.with_inputs(new_inputs) # voila!
 
 
-    @classmethod
-    def _validate_inputs(objects):
-        if len(objects) == 0:
-            raise cls.NoInputs()
+    @staticmethod
+    def from_bytes(bytes):
+        buffer = Buffer(bytes)
 
-        for object in objects:
-            if not isinstance(object, Input):
-                raise cls.NotAnInput(object)
+        version = decode_int(buffer.read(4), big_endian = False)
 
-    @classmethod
-    def _validate_outputs(objects):
-        if len(objects) == 0:
-            raise cls.NoInputs()
+        ninputs = buffer.read_varint()
+        inputs  = [ Input.from_buffer(buffer) for i in range(ninputs) ]
 
-        for object in objects:
-            if not isinstance(object, Input):
-                raise cls.NotAnInput(object)
+        noutputs = buffer.read_varint()
+        outputs  = [ Output.from_buffer(buffer) for i in range(noutputs) ]
+
+        lock_time = decode_int(buffer.read(4), big_endian = False)
+
+        return Transaction(inputs, outputs, lock_time, version)

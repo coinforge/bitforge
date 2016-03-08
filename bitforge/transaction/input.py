@@ -72,6 +72,23 @@ class Input(BaseInput):
         # about. See Input subclasses.
         raise UnknownSignatureMethod()
 
+    @classmethod
+    def from_bytes(cls, bytes):
+        return cls.from_buffer(Buffer(bytes))
+
+    @classmethod
+    def from_buffer(cls, buffer):
+        # Inverse operation of Input.to_bytes(), check that out.
+        tx_id     = encode_hex(buffer.read(32)[::-1]) # reversed
+        txo_index = decode_int(buffer.read(4), big_endian = False)
+
+        script_len = buffer.read_varint()
+        script     = Script.from_bytes(buffer.read(script_len))
+
+        seq_number = decode_int(buffer.read(4), big_endian = False)
+
+        return cls(tx_id, txo_index, script, seq_number)
+
 
 class AddressInput(Input):
 

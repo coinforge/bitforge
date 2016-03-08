@@ -32,6 +32,20 @@ class Output(BaseOutput):
 
         return str(buffer)
 
+    @classmethod
+    def from_bytes(cls, bytes):
+        return cls.from_buffer(Buffer(bytes))
+
+    @classmethod
+    def from_buffer(cls, buffer):
+        # Inverse operation of Output.to_bytes(), check that out.
+        amount = decode_int(buffer.read(8), big_endian = False)
+
+        script_len = buffer.read_varint()
+        script     = Script.from_bytes(buffer.read(script_len))
+
+        return cls(amount, script)
+
 
 class AddressOutput(Output):
 
