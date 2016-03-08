@@ -1,7 +1,7 @@
-from bitforge import Transaction
+from bitforge.transaction import Transaction
 from bitforge.tools import Buffer
 
-from bitforge.encoding import encode_script_number, decode_script_number
+from bitforge.encoding import encode_script_number, decode_script_number, encode_int
 from bitforge.encoding import sha1, ripemd160, sha256, hash160
 
 from opcode import *
@@ -757,7 +757,16 @@ class Interpreter(object):
 
     @staticmethod
     def cast_to_bool(bytes):
-        pass
+        print 'Bytes', bytes, len(bytes)
+        length = len(bytes)
+        for i in range(length):
+            if bytes[0] != '\x00':
+                if i == (length - 1) and bytes[i] == encode_int(0x80):
+                    return False
+                else:
+                    return True
+
+        return False
 
 
     # Interpreter constants
