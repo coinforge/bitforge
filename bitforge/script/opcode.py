@@ -44,11 +44,8 @@ OP_PUSHDATA4 = 78
 
 # Flow control:
 OP_NOP      = 97
-OP_VER      = 98
 OP_IF       = 99
 OP_NOTIF    = 100
-OP_VERIF    = 101
-OP_VERNOTIF = 102
 OP_ELSE     = 103
 OP_ENDIF    = 104
 OP_VERIFY   = 105
