@@ -4,7 +4,7 @@ from bitforge.encoding import *
 from bitforge.errors import *
 from bitforge.tools import Buffer
 from bitforge.signature import SIGHASH_ALL
-from bitforge import Script
+from bitforge.script import Script
 
 
 FINAL_SEQ_NUMBER = 0xFFFFFFFF
@@ -58,6 +58,9 @@ class Input(BaseInput):
 
     def with_script(self, script):
         return Input(self.tx_id, self.txo_index, script, self.seq_number)
+
+    def without_script(self):
+        return self.with_script(Script())
 
     def signed(self, privkeys, payload):
         # Signing an Input requires knowledge of two things:

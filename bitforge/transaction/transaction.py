@@ -101,7 +101,7 @@ class Transaction(BaseTransaction):
         # there already, manually placed or auto-created by Input subclasses.
 
         simplified_inputs = (
-            input.with_script('') if i != txi_index else input
+            input.without_script() if i != txi_index else input
             for i, input in enumerate(self.inputs)
         )
 

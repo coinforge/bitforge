@@ -3,7 +3,7 @@ import collections
 from bitforge.encoding import *
 from bitforge.errors import *
 from bitforge.tools import Buffer
-from bitforge import Script
+from bitforge.script import Script
 
 
 BaseOutput = collections.namedtuple('Output',
