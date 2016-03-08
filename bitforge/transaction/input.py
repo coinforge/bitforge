@@ -56,6 +56,9 @@ class Input(BaseInput):
 
         return str(buffer)
 
+    def to_hex(self):
+        return encode_hex(self.to_bytes())
+
     def with_script(self, script):
         return Input(self.tx_id, self.txo_index, script, self.seq_number)
 
@@ -74,6 +77,10 @@ class Input(BaseInput):
         # already be waiting in our `script` property, but (2) we can't know
         # about. See Input subclasses.
         raise UnknownSignatureMethod()
+
+    @classmethod
+    def from_hex(cls, string):
+        return cls.from_bytes(decode_hex(string))
 
     @classmethod
     def from_bytes(cls, bytes):

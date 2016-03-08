@@ -149,5 +149,5 @@ class Transaction(BaseTransaction):
         return Transaction(inputs, outputs, lock_time, version)
 
     @staticmethod
-    def from_hex(hex):
-        return Transaction.from_bytes(decode_hex(hex))
+    def from_hex(string):
+        return Transaction.from_bytes(decode_hex(string))
