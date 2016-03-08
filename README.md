@@ -27,12 +27,12 @@ pip install -r requirements.txt
 
 Run the tests to make sure everything is working:
 ```
-py.test tests/*
+py.test tests/all.py
 ```
 
 should output something similar to:
 ```
-$ py.test tests/*
+$ py.test tests/all.py
 ================================= test session starts =================================
 platform linux2 -- Python 2.7.6 -- py-1.4.27 -- pytest-2.7.0
 rootdir: /path/to/bitforge, inifile:
