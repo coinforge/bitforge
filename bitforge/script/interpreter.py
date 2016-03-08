@@ -22,7 +22,7 @@ class Interpreter(object):
         self.errstr = ''
         self.flags = 0
 
-    def verify(self, script_sig, script_pubkey, tx, nin, flags):
+    def verify(self, script_sig, script_pubkey, tx = None, nin = 0, flags = 0):
         """
         Verifies a Script by executing it and returns true if it is valid.
         This function needs to be provided with the scriptSig and the scriptPubkey
@@ -37,10 +37,11 @@ class Interpreter(object):
 
         Translated from bitcoind's VerifyScript
         """
+        self.initialize()
         self.script = script_sig
         self.tx = tx or Transaction([], [])
-        self.nin = nin or 0
-        self.flags = flags or 0
+        self.nin = nin
+        self.flags = flags
 
         if flags & Interpreter.SCRIPT_VERIFY_SIGPUSHONLY and not script_sig.is_push_only():
             self.errstr = 'SCRIPT_ERR_SIG_PUSHONLY'
@@ -118,7 +119,7 @@ class Interpreter(object):
         Interpreter.step()
         bitcoind commit: b5d1b1092998bc95313856d535c632ea5a8f9104
         """
-        if len(self.script.to_bytes) > 10000:
+        if len(self.script.to_bytes()) > 10000:
             self.errstr = 'SCRIPT_ERR_SCRIPT_SIZE'
             return False
 
@@ -132,7 +133,7 @@ class Interpreter(object):
                 return False
 
         except Exception as e:
-            self.errstr = 'SCRIPT_ERR_UNKNOWN_ERROR: ' + e
+            self.errstr = 'SCRIPT_ERR_UNKNOWN_ERROR: ' + str(e)
             return False
 
         if len(self.vf_exec) > 0:
@@ -188,16 +189,16 @@ class Interpreter(object):
                 return False
 
             if not instruction.data:
-                self.stack.push(Interpreter.false)
+                self.stack += [Interpreter.false]
             else:
-                self.stack.push(instruction.data)
+                self.stack += [instruction.data]
 
         elif f_exec or OP_IF <= instruction.opcode <= OP_ENDIF:
             if instruction.opcode in [OP_1NEGATE, OP_1, OP_2, OP_3, OP_4, OP_5, OP_6, OP_7, OP_8, OP_9, OP_10, OP_11, OP_12, OP_13, OP_14, OP_15, OP_16]:
-                number = instruction.opcode.number - (OP_1 - 1)
+                number = instruction.opcode.number - (OP_1.number - 1)
                 bytes = encode_script_number(number)
-                self.stack.push(bytes)
-                # The result of theseopcodes should always be the minimal way to
+                self.stack += [bytes]
+                # The result of these opcodes should always be the minimal way to
                 # push data, so no need to Check MinimalPush here.
 
             elif instruction.opcode == OP_NOP:
@@ -262,7 +263,7 @@ class Interpreter(object):
                     if instruction.opcode == OP_NOTIF:
                         f_value = not f_value
 
-                self.vf_exec.push(f_value)
+                self.vf_exec += [f_value]
 
             elif instruction.opcode == OP_ELSE:
                 if len(self.vf_exec) == 0:
@@ -302,14 +303,16 @@ class Interpreter(object):
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
-                self.altstack.push(self.stack.pop())
+                self.altstack += self.stack[-1:]
+                self.stack = self.stack[:-1]
 
             elif instruction.opcode == OP_FROMALTSTACK:
                 if len(self.altstack) < 1:
                     self.errstr = 'SCRIPT_ERR_INVALID_ALTSTACK_OPERATION'
                     return False
 
-                self.stack.push(self.altstack.pop())
+                self.stack += self.altstack[-1:]
+                self.altstack = self.altstack[:-1]
 
             elif instruction.opcode == OP_2DROP:
                 # (x1, x2 -- )
@@ -373,11 +376,11 @@ class Interpreter(object):
                 bytes = self.stack[-1]
                 f_value = Interpreter.cast_to_bool(bytes)
                 if f_value:
-                    self.stack.push(bytes)
+                    self.stack += [bytes]
 
             elif instruction.opcode == OP_DEPTH:
                 bytes = encode_script_number(len(self.stack))
-                self.stack.push(bytes)
+                self.stack += [bytes]
 
             elif instruction.opcode == OP_DROP:
                 # ( x -- )
@@ -386,6 +389,7 @@ class Interpreter(object):
                     return False
 
                 self.stack.pop()
+                self.stack = self.stack[:-1]
 
             elif instruction.opcode == OP_DUP:
                 # ( x -- x x )
@@ -393,7 +397,7 @@ class Interpreter(object):
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
-                self.stack.push(self.stack[-1])
+                self.stack += self.stack[-1:]
 
             elif instruction.opcode == OP_NIP:
                 # (x1 x2 -- x2)
@@ -401,7 +405,8 @@ class Interpreter(object):
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
-                self.stack.pop(-2)
+                x1, x2 = self.stack[-2:]
+                self.stack = self.stack[:-2] + [x2]
 
             elif instruction.opcode == OP_OVER:
                 # (x1 x2 -- x1 x2 x1)
@@ -409,7 +414,7 @@ class Interpreter(object):
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
-                self.stack.push(self.stack[-2])
+                self.stack += [self.stack[-2]]
 
             elif instruction.opcode in [OP_PICK, OP_ROLL]:
                 # (xn ... x2 x1 x0 n - xn ... x2 x1 x0 xn)
@@ -428,7 +433,7 @@ class Interpreter(object):
                 if instruction.opcode == OP_ROLL:
                     self.stack.pop(-n-1)
 
-                self.stack.push(bytes)
+                self.stack += [bytes]
 
             elif instruction.opcode == OP_ROT:
                 # (x1 x2 x3 -- x2 x3 x1)
@@ -757,7 +762,6 @@ class Interpreter(object):
 
     @staticmethod
     def cast_to_bool(bytes):
-        print 'Bytes', bytes, len(bytes)
         length = len(bytes)
         for i in range(length):
             if bytes[0] != '\x00':
