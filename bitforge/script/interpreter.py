@@ -1,5 +1,6 @@
-from bitforge.transaction import Transaction
+from bitforge.transaction import Transaction, Input, Output
 from bitforge.tools import Buffer
+from bitforge.script import Script
 
 from bitforge.encoding import encode_script_number, decode_script_number, encode_int
 from bitforge.encoding import sha1, ripemd160, sha256, hash160
@@ -39,7 +40,7 @@ class Interpreter(object):
         """
         self.initialize()
         self.script = script_sig
-        self.tx = tx or Transaction([], [])
+        self.tx = tx or Transaction([ Input('', 0, Script()) ], [ Output(0, Script()) ])
         self.nin = nin
         self.flags = flags
 
@@ -58,7 +59,7 @@ class Interpreter(object):
         self.initialize()
         self.script = script_pubkey
         self.stack = stack
-        self.tx = tx or Transaction([], [])
+        self.tx = tx or Transaction([ Input('', 0, Script()) ], [ Output(0, Script()) ])
         self.nin = nin or 0
         self.flags = flags or 0
 
@@ -95,7 +96,7 @@ class Interpreter(object):
             self.initialize()
             self.script = redeem_script
             self.stack = stack_copy
-            self.tx = tx or Transaction([], [])
+            self.tx = tx or Transaction([ Input('', 0, Script()) ], [ Output(0, Script()) ])
             self.nin = nin or 0
             self.flags = flags or 0
 
