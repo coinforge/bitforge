@@ -104,6 +104,13 @@ class Script(object):
             [ OP_CHECKMULTISIG ]
         )
 
+    @staticmethod
+    def op_return(data):
+        return Script.compile([
+            OP_RETURN,
+            data
+        ])
+
 
         # OP_0 here for historical reasons, related to a bug in BTC Core
 

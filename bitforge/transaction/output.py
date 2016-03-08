@@ -66,3 +66,22 @@ class MultisigOutput(ScriptOutput):
     def __new__(cls, amount, pubkeys, min_signatures):
         redeem_script = Script.redeem_multisig(pubkeys, min_signatures)
         return super(MultisigOutput, cls).__new__(cls, amount, redeem_script)
+
+
+class DataOutput(Output):
+
+    class Error(BitforgeError):
+        pass
+
+    class TooMuchData(Error, NumberError):
+        "DataOutputs can carry at most 80 bytes, but {number} were passed in"
+
+
+    def __new__(cls, bytes):
+        if len(bytes) > 80:
+            raise TooMuchData(len(bytes))
+
+        amount = 0
+        script = Script.op_return(bytes)
+
+        return super(DataOutput, cls).__new__(cls, amount, script)

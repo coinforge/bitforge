@@ -147,3 +147,7 @@ class Transaction(BaseTransaction):
         lock_time = decode_int(buffer.read(4), big_endian = False)
 
         return Transaction(inputs, outputs, lock_time, version)
+
+    @staticmethod
+    def from_hex(hex):
+        return Transaction.from_bytes(decode_hex(hex))
