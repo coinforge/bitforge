@@ -11,11 +11,11 @@ from bitforge.tools import Buffer
 class TestScript:
     def test_create_emtpy(self):
         s = Script()
-        assert s.instructions == []
+        assert s.instructions == tuple()
 
     def test_binary_single(self):
         s = Script.from_bytes('\0')
-        assert s.instructions == [Instruction(OP_0)]
+        assert s.instructions == (Instruction(OP_0),)
 
     def test_binary_const_pushes(self):
         for length in xrange(1, 76):
@@ -24,17 +24,17 @@ class TestScript:
 
             s = Script.from_bytes(chr(length) + string)
 
-            assert s.instructions == [Instruction(opcode, string)]
+            assert s.instructions == (Instruction(opcode, string),)
 
     def test_binary_var_pushes(self):
         s1 = Script.from_bytes(chr(OP_PUSHDATA1.number) + '\3' + 'abc')
-        assert s1.instructions == [Instruction(OP_PUSHDATA1, 'abc')]
+        assert s1.instructions == (Instruction(OP_PUSHDATA1, 'abc'),)
 
         s2 = Script.from_bytes(chr(OP_PUSHDATA2.number) + '\3\0' + 'abc')
-        assert s2.instructions == [Instruction(OP_PUSHDATA2, 'abc')]
+        assert s2.instructions == (Instruction(OP_PUSHDATA2, 'abc'),)
 
         s2 = Script.from_bytes(chr(OP_PUSHDATA4.number) + '\3\0\0\0' + 'abc')
-        assert s2.instructions == [Instruction(OP_PUSHDATA4, 'abc')]
+        assert s2.instructions == (Instruction(OP_PUSHDATA4, 'abc'),)
 
         with raises(Buffer.InsufficientData):
             Script.from_bytes(chr(OP_PUSHDATA1.number) + '\3' + 'a')
@@ -54,7 +54,7 @@ class TestScript:
         bytes = ''.join(chr(opcode.number) for opcode in opcodes)
 
         s = Script.from_bytes(bytes)
-        assert s.instructions == map(Instruction, opcodes)
+        assert s.instructions == tuple(map(Instruction, opcodes))
 
     # def test_from_string(self):
     #     s = 'OP_0 OP_PUSHDATA4 3 0x010203 OP_0'
