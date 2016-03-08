@@ -1,8 +1,8 @@
 import sys, inspect
 from numbers import Number
+from functools import total_ordering
 
 from bitforge.errors import *
-
 
 # Below is a list of all *named* opcodes. Their values, integers in the
 # listing, will be dynamically replaced with Opcode instances further below.
@@ -44,11 +44,8 @@ OP_PUSHDATA4 = 78
 
 # Flow control:
 OP_NOP      = 97
-OP_VER      = 98
 OP_IF       = 99
 OP_NOTIF    = 100
-OP_VERIF    = 101
-OP_VERNOTIF = 102
 OP_ELSE     = 103
 OP_ENDIF    = 104
 OP_VERIFY   = 105
@@ -135,9 +132,11 @@ OP_CHECKSIGVERIFY = 173
 OP_CHECKMULTISIG = 174
 OP_CHECKMULTISIGVERIFY = 175
 
+# Locktime:
+OP_CHECKLOCKTIMEVERIFY = 177
+
 # Ignored operations:
 OP_NOP1  = 176
-OP_NOP2  = 177
 OP_NOP3  = 178
 OP_NOP4  = 179
 OP_NOP5  = 180
@@ -154,6 +153,7 @@ OP_INVALIDOPCODE = 255
 OP_RESERVED      = 80
 
 
+@total_ordering
 class Opcode(object):
 
     class Error(BitforgeError):
@@ -215,6 +215,12 @@ class Opcode(object):
             return False
 
         return self.number == other.number
+
+    def __lt__(self, other):
+        if not isinstance(other, Opcode):
+            return False
+
+        return self.number < other.number
 
     def __hash__(self):
         return hash(self.number)
