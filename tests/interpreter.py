@@ -2,8 +2,9 @@ from pytest import raises, fixture, fail
 import bitforge.networks
 from bitforge.privkey import PrivateKey
 from bitforge.pubkey import PublicKey
-from bitforge.script import Interpreter
+from bitforge.script import Interpreter, Script
 from bitforge.encoding import encode_int, decode_hex, encode_script_number
+from bitforge.script.opcode import *
 
 
 class TestInterpreter:
@@ -25,6 +26,34 @@ class TestInterpreter:
         assert Interpreter.cast_to_bool(decode_hex('008A')) is False  # Negative 0
         assert Interpreter.cast_to_bool(encode_script_number(1)) is True
         assert Interpreter.cast_to_bool(encode_script_number(-1)) is True
+
+    def test_verify_trivial_scripts(self):
+        interpreter = Interpreter()
+
+        verified = interpreter.verify(Script.compile([OP_1]), Script.compile([OP_1]))
+        assert verified is True
+
+        verified = interpreter.verify(Script.compile([OP_1]), Script.compile([OP_0]))
+        assert verified is False
+
+        verified = interpreter.verify(Script.compile([OP_0]), Script.compile([OP_1]))
+        assert verified is True
+
+        verified = interpreter.verify(Script.compile([OP_CODESEPARATOR]), Script.compile([OP_1]))
+        assert verified is True
+
+        verified = interpreter.verify(Script(), Script.compile([OP_DEPTH, OP_0, OP_EQUAL]))
+        assert verified is True
+
+        # verified = interpreter.verify(Script.from_string('9 0x000000000000000010'), Script())
+        # assert verified is True
+
+        verified = interpreter.verify(Script.compile([OP_1]), Script.compile([OP_15, OP_ADD, OP_16, OP_EQUAL]))
+        assert verified is True
+
+        verified = interpreter.verify(Script.compile([OP_0]), Script.compile([OP_IF, OP_VERIFY, OP_ELSE, OP_1, OP_ENDIF]))
+        assert verified is True
+
 
 
     # def test_from_hex_errors(self):
