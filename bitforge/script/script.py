@@ -11,6 +11,25 @@ from instruction import Instruction
 
 
 class Script(object):
+
+    class Error(BitforgeError):
+        pass
+
+    class MissingPushArguments(Error, StringError):
+        "Missing arguments for {string} operation"
+
+    class InvalidPushSize(Error, StringError):
+        "Push size must be a number, got {string}"
+
+    class InvalidPushData(Error, StringError):
+        "Push data must be hexa encoded and start with 0x, got {string}"
+
+    class InvalidPushDataLength(Error, NumberError):
+        "Push data length doesn't match push size, got {number}"
+
+    class UnknownOpcodeName(Error, StringError):
+        "No known operation named {string}"
+
     def __init__(self, instructions = None):
         self.instructions = instructions if instructions is not None else []
 
@@ -40,6 +59,57 @@ class Script(object):
 
         return Script(instructions)
 
+    @staticmethod
+    def from_string(string):
+        instructions = []
+        tokens = (i for i in string.split(' '))
+
+        def get_opcode(token):
+            try:
+                return Opcode.from_name(token)
+            except Opcode.UnknownOpcodeName:
+                if token.isdigit():
+                    return Opcode.const_push_for(int(token))
+                else:
+                    raise Script.UnknownOpcodeName(token)
+
+        for token in tokens:
+            try:
+                opcode = get_opcode(token)
+
+                if opcode.is_const_push():
+                    hex_bytes = tokens.next()
+
+                    if not hex_bytes.startswith('0x'):
+                        raise Script.InvalidPushData(hex_bytes)
+
+                    bytes = decode_hex(hex_bytes[2:])
+                    instructions.append(Instruction(opcode, data=bytes))
+
+                elif opcode.is_var_push():
+                    size_string = tokens.next()
+                    hex_bytes = tokens.next()
+
+                    if not size_string.isdigit():
+                        raise Script.InvalidPushSize(size_string)
+
+                    if not hex_bytes.startswith('0x'):
+                        raise Script.InvalidPushData(hex_bytes)
+
+                    bytes = decode_hex(hex_bytes[2:])
+
+                    if int(size_string) != len(bytes):
+                        raise Script.InvalidPushDataLength(len(bytes))
+
+                    instructions.append(Instruction(opcode, data = bytes))
+
+                else:
+                    instructions.append(Instruction(opcode))
+
+            except StopIteration:
+                raise Script.MissingPushArguments(token)
+
+        return Script(instructions)
 
     @staticmethod
     def compile(schematic):
@@ -241,7 +311,7 @@ class Script(object):
         return ripemd160(sha256(self.to_bytes()))
 
     def to_string(self):
-        return '\n'.join(i.to_string() for i in self.instructions)
+        return ' '.join(i.to_string() for i in self.instructions)
 #
 #     def to_string(self):
 #         return ' '.join(map(str, self.instructions))
