@@ -56,19 +56,37 @@ class TestScript:
         s = Script.from_bytes(bytes)
         assert s.instructions == map(Instruction, opcodes)
 
-    # def test_from_string(self):
-    #     s = 'OP_0 OP_PUSHDATA4 3 0x010203 OP_0'
-    #     assert Script.from_string(s).to_string() == s
-    #
-    #     s = 'OP_0 OP_PUSHDATA2 3 0x010203 OP_0'
-    #     assert Script.from_string(s).to_string() == s
-    #
-    #     s = 'OP_0 OP_PUSHDATA1 3 0x010203 OP_0'
-    #     assert Script.from_string(s).to_string() == s
-    #
-    #     s = 'OP_0 3 0x010203 OP_0'
-    #     assert Script.from_string(s).to_string() == s
-    #
+    def test_from_string(self):
+
+        def test_script_string(string, instructions):
+            script = Script.from_string(string)
+            assert script.to_string() == string
+            assert len(script.instructions) == instructions
+
+        test_script_string('OP_0 OP_PUSHDATA4 3 0x010203 OP_0', 3)
+        test_script_string('OP_0 OP_PUSHDATA2 3 0x010203 OP_0', 3)
+        test_script_string('OP_0 OP_PUSHDATA1 3 0x010203 OP_0', 3)
+        test_script_string('OP_0 3 0x010203 OP_0', 3)
+
+        with raises(Script.UnknownOpcodeName):
+            Script.from_string('OP_99')
+
+        with raises(Script.MissingPushArguments):
+            Script.from_string('OP_PUSHDATA1')
+
+        with raises(Script.MissingPushArguments):
+            Script.from_string('OP_PUSHDATA1 3')
+
+        with raises(Script.InvalidPushDataLength):
+            Script.from_string('OP_PUSHDATA1 3 0x01020302')
+
+        with raises(Script.InvalidPushData):
+            Script.from_string('OP_PUSHDATA1 3 010203')
+
+        with raises(Script.InvalidPushData):
+            Script.from_string('3 010203')
+
+
     # def test_to_string_empty(self):
     #     s = Script()
     #     assert s.to_string() == ''
