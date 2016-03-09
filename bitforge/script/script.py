@@ -10,7 +10,12 @@ from opcode import *
 from instruction import Instruction
 
 
-class Script(object):
+BaseScript = collections.namedtuple('Script',
+    ['instructions']
+)
+
+
+class Script(BaseScript):
 
     class Error(BitforgeError):
         pass
@@ -30,8 +35,9 @@ class Script(object):
     class UnknownOpcodeName(Error, StringError):
         "No known operation named {string}"
 
-    def __init__(self, instructions = None):
-        self.instructions = instructions if instructions is not None else []
+    def __new__(cls, instructions = None):
+        instructions = tuple(instructions if instructions is not None else [])
+        return super(Script, cls).__new__(cls, instructions)
 
     @staticmethod
     def from_bytes(bytes):
