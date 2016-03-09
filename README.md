@@ -1,4 +1,6 @@
 # BitForge
+[![Build Status](https://travis-ci.org/coinforge/bitforge.svg?branch=master&style=flat-square)](https://travis-ci.org/coinforge/bitforge)
+
 A pure and powerful python bitcoin library
 
 
