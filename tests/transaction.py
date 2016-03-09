@@ -1,7 +1,6 @@
-import pytest, inspect
-from pytest import raises, fixture, fail
+from pytest import raises
 
-from bitforge import Transaction, Input, Output, Script
+from bitforge import Transaction, Input, Output, DataOutput, Script
 
 
 class MockInput(Input):
@@ -32,3 +31,17 @@ class TestTransaction:
     def test_invalid_lock_time(self):
         with raises(Transaction.InvalidLockTime):
             Transaction([ MockInput() ], [ MockOutput() ], -1)
+
+
+class TestInput:
+    def test_create(self):
+        MockInput()
+
+
+class TestOutput:
+    def test_create(self):
+        MockOutput()
+
+    def test_too_much_data(self):
+        with raises(DataOutput.TooMuchData):
+            DataOutput("0" * 81)
