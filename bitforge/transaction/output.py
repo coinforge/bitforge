@@ -83,7 +83,7 @@ class DataOutput(Output):
 
     def __new__(cls, bytes):
         if len(bytes) > 80:
-            raise TooMuchData(len(bytes))
+            raise DataOutput.TooMuchData(len(bytes))
 
         amount = 0
         script = Script.op_return(bytes)
