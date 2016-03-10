@@ -235,10 +235,18 @@ class Opcode(object):
 
     @staticmethod
     def from_name(name):
-        if not (name.startswith('OP_') and hasattr(Opcode, name)):
+        if not name.startswith('OP_'):
             raise Opcode.UnknownOpcodeName(name)
 
-        return Opcode(getattr(Opcode, name))
+        # Get element from module
+        _module = sys.modules[__name__]
+        members = inspect.getmembers(_module)
+        results = filter(lambda member: member[0] == name, members)
+
+        if not results:
+            raise Opcode.UnknownOpcodeName(name)
+
+        return results[0][1]
 
     @staticmethod
     def const_push_for(length):
@@ -301,7 +309,7 @@ for name, number in inspect.getmembers(_module):
         # Replace integer values with actual Opcode instances:
         setattr(_module, name, Opcode(number))
 
-Opcode.opcode_number_to_name[OP_0] = 'OP_0' # shares number with OP_FALSE
-Opcode.opcode_number_to_name[OP_1] = 'OP_1' # shares number with OP_TRUE
+Opcode.opcode_number_to_name[0] = 'OP_0'  # shares number with OP_FALSE
+Opcode.opcode_number_to_name[81] = 'OP_1'  # shares number with OP_TRUE
 
 del _module # the expected use for this module is to import *
