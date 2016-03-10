@@ -4,7 +4,7 @@ from numbers import Number
 from bitforge.encoding import *
 from bitforge.errors import *
 
-from opcode import *
+from .opcode import *
 
 
 BaseInstruction = collections.namedtuple('BaseInstruction', ['opcode', 'data'])

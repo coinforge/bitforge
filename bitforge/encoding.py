@@ -1,5 +1,8 @@
-import utils, binascii, hashlib
-from errors import StringError
+import binascii
+import hashlib
+
+from . import utils
+from .errors import StringError
 
 
 class EncodingError(StringError):

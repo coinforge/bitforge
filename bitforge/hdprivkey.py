@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import os, hmac, hashlib, collections
-import ecdsa, utils, networks
-from privkey import PrivateKey
-from hdpubkey import HDPublicKey
-from utils.intbytes import int_from_bytes, int_to_bytes, to_bytes
+from . import ecdsa, utils, networks
+from .privkey import PrivateKey
+from .hdpubkey import HDPublicKey
+from .utils.intbytes import int_from_bytes, int_to_bytes, to_bytes
 
 # TODO: should be in networks.py
 # TODO: check which of these are network dependent

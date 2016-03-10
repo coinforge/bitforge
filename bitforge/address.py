@@ -1,9 +1,9 @@
 import binascii, collections
 from enum import Enum
 
-import networks, utils
-from encoding import *
-from errors import *
+from . import networks, utils
+from .encoding import *
+from .errors import *
 # from script import Script
 
 

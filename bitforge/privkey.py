@@ -1,9 +1,9 @@
 import random, binascii, collections
-import networks, utils, ecdsa
-from errors import *
-from pubkey import PublicKey
-from address import Address
-from encoding import *
+from . import networks, utils, ecdsa
+from .errors import *
+from .pubkey import PublicKey
+from .address import Address
+from .encoding import *
 
 
 rng     = random.SystemRandom()

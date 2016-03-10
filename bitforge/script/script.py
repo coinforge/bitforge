@@ -6,8 +6,8 @@ from bitforge.encoding import *
 from bitforge.tools import Buffer
 from bitforge.errors import *
 
-from opcode import *
-from instruction import Instruction
+from .opcode import *
+from .instruction import Instruction
 
 
 BaseScript = collections.namedtuple('Script',

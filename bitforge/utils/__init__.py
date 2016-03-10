@@ -5,5 +5,5 @@ from .ellipticcurve import CurveFp, Point
 
 from .secp256k1 import generator_secp256k1
 
-import encoding
-import intbytes
+from . import encoding
+from . import intbytes

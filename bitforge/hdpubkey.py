@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import os, hmac, hashlib, collections
-import ecdsa, utils, networks
-from pubkey import PublicKey
-from utils.intbytes import int_from_bytes, int_to_bytes, to_bytes
+import ecdsa
+
+from . import utils, networks
+from .pubkey import PublicKey
+from .utils.intbytes import int_from_bytes, int_to_bytes, to_bytes
 
 
 ROOT_FINGERPRINT = 0

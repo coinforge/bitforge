@@ -5,7 +5,7 @@ from bitforge.script import Script
 from bitforge.encoding import encode_script_number, decode_script_number, encode_int
 from bitforge.encoding import sha1, ripemd160, sha256, hash160
 
-from opcode import *
+from .opcode import *
 
 
 class Interpreter(object):

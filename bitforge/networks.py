@@ -1,6 +1,6 @@
 import sys
 from collections import namedtuple
-from errors import KeyValueError
+from .errors import KeyValueError
 
 
 class UnknownNetwork(KeyValueError):

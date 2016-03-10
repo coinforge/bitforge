@@ -1,5 +1,5 @@
-from errors import *
-from encoding import *
+from .errors import *
+from .encoding import *
 
 
 class Buffer(bytearray):
