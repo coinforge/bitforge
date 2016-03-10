@@ -32,6 +32,9 @@ class Output(BaseOutput):
 
         return str(buffer)
 
+    def to_hex(self):
+        return encode_hex(self.to_bytes())
+
     @classmethod
     def from_hex(cls, string):
         return cls.from_bytes(decode_hex(string))
