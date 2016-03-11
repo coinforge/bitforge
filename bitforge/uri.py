@@ -1,5 +1,8 @@
-from urllib import urlencode
-from urlparse import urlparse, parse_qsl
+try:
+    from urllib.parse import urlparse, parse_qsl, urlencode
+except ImportError:
+    from urlparse import urlparse, parse_qsl
+    from urllib import urlencode
 
 from bitforge import Address, Unit
 
