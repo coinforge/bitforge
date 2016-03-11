@@ -84,7 +84,7 @@ class Script(BaseScript):
                 opcode = get_opcode(token)
 
                 if opcode.is_const_push():
-                    hex_bytes = tokens.next()
+                    hex_bytes = next(tokens)
 
                     if not hex_bytes.startswith('0x'):
                         raise Script.InvalidPushData(hex_bytes)
@@ -93,8 +93,8 @@ class Script(BaseScript):
                     instructions.append(Instruction(opcode, data=bytes))
 
                 elif opcode.is_var_push():
-                    size_string = tokens.next()
-                    hex_bytes = tokens.next()
+                    size_string = next(tokens)
+                    hex_bytes = next(tokens)
 
                     if not size_string.isdigit():
                         raise Script.InvalidPushSize(size_string)
