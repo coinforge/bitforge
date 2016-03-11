@@ -241,13 +241,13 @@ class Opcode(object):
         # Get element from module
         _module = sys.modules[__name__]
         members = inspect.getmembers(_module)
-        results = filter(lambda member: member[0] == name, members)
+        # Cast iterable to list for python 3 compatibility
+        results = list(filter(lambda member: member[0] == name, members))
 
         if not results:
             raise Opcode.UnknownOpcodeName(name)
 
-        # Cast iterable to list for python 3 compatibility
-        return list(results)[0][1]
+        return results[0][1]
 
     @staticmethod
     def const_push_for(length):
