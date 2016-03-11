@@ -37,7 +37,7 @@ class URI(object):
         MEMBERS = ['address', 'amount', 'message', 'label', 'r']
         self.extras = {}
 
-        for k, v in args.iteritems():
+        for k, v in args.items():
             if k in MEMBERS:
                 setattr(self, k, v)
             else:
