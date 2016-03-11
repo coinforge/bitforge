@@ -246,7 +246,8 @@ class Opcode(object):
         if not results:
             raise Opcode.UnknownOpcodeName(name)
 
-        return results[0][1]
+        # Cast iterable to list for python 3 compatibility
+        return list(results)[0][1]
 
     @staticmethod
     def const_push_for(length):
