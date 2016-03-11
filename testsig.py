@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from bitforge.encoding import *
 from bitforge.signature import validate_signature
 
@@ -7,4 +9,4 @@ sigs = [
 	'304402203b0d7364919b519773e21f09167e2d92140abaa6bd265bbcd3e637fd3ea5a7c102207dcbf6fab5c331db6cb743e6593c7f41aca905b27a9cf4079393f7446854423101',
 ]
 
-print map(validate_signature, map(decode_hex, sigs))
+print(map(validate_signature, map(decode_hex, sigs)))

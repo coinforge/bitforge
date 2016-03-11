@@ -19,7 +19,6 @@ data = {
 
 
 def read_addr_fixture_info(info):
-    print info
     string_b58h, string_hex, meta = info
 
     network = networks.testnet if meta['isTestnet'] else networks.livenet

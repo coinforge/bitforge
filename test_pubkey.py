@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from bitforge.encoding import *
 from bitforge import Input, AddressInput, AddressOutput, Transaction, PrivateKey
 from bitforge import networks
@@ -6,9 +8,9 @@ import termcolor # not a library dependency, obviously
 
 
 def log(title, content):
-    print termcolor.colored(title + ":", 'green', attrs = ['bold'])
-    print content
-    print ''
+    print(termcolor.colored(title + ":", 'green', attrs = ['bold']))
+    print(content)
+    print('')
 
 
 PK_HEX = '21c601c0ae6dfcdcf622e6fe2be9153ed7ada0cc90a8a08475e57060e18c0791'
@@ -30,7 +32,7 @@ t = Transaction([i], [o])
 signed_transaction_hex = t.signed([ privkey ], 0).to_hex()
 
 
-print ''
+print('')
 log("Private Key", privkey.to_hex())
 log("Public Key", pubkey.to_hex())
 log("Address", address.to_string())

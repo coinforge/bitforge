@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from bitforge.encoding import *
 from bitforge import Address, Script, Input, MultisigInput, AddressInput, AddressOutput, MultisigOutput, Transaction, PrivateKey
 from bitforge import networks
@@ -6,9 +8,9 @@ import termcolor # not a library dependency, obviously
 
 
 def log(title, content):
-    print termcolor.colored(title + ":", 'green', attrs = ['bold'])
-    print content
-    print ''
+    print(termcolor.colored(title + ":", 'green', attrs = ['bold']))
+    print(content)
+    print('')
 
 
 
@@ -54,7 +56,7 @@ def from_multisig_to_regular():
     return Transaction([i], [o])
 
 
-print ''
+print('')
 log("Regular private Key", privkey.to_hex())
 log("Regular public Key", pubkey.to_hex())
 log("Regular address", address.to_string())
