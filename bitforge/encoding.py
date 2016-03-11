@@ -63,9 +63,9 @@ def decode_int(bytes, big_endian = True):
 
     integer = 0
 
-    for char in bytes:
+    for char in bytearray(bytes):
         integer <<= 8
-        integer += ord(char)
+        integer += char
 
     return integer
 
