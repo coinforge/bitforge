@@ -39,7 +39,7 @@ class PrivateKey(BasePrivateKey):
         "The PrivateKey WIF {string} should be 33 (uncompressed) or 34 (compressed) bytes long, not {length}"
 
     class InvalidCompressionByte(Error, StringError):
-        "The length of the PrivateKey WIF {string} suggests it's compressed, but it doesn't end in '\1'"
+        "The length of the PrivateKey WIF {string} suggests it's compressed, but it doesn't end in '\\1'"
 
     class InvalidBase58h(Error, InvalidBase58h):
         "The PrivateKey string {string} is not valid base58/check"
