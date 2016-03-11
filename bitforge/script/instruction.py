@@ -100,7 +100,7 @@ class Instruction(BaseInstruction):
             return opcode_byte
 
     def to_hex(self):
-        return encode_hex(self.to_bytes())
+        return encode_hex(self.to_bytes()).decode('utf-8')
 
     def to_string(self):
         if self.opcode.is_push():

@@ -311,7 +311,7 @@ class Script(BaseScript):
         return ''.join(i.to_bytes() for i in self.instructions)
 
     def to_hex(self):
-        return encode_hex(self.to_bytes())
+        return encode_hex(self.to_bytes()).decode('utf-8')
 
     def to_hash(self):
         return ripemd160(sha256(self.to_bytes()))

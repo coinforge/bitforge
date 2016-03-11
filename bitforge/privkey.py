@@ -115,7 +115,7 @@ class PrivateKey(BasePrivateKey):
         return encode_int(self.secret, length = 32)
 
     def to_hex(self):
-        return encode_hex(self.to_bytes())
+        return encode_hex(self.to_bytes()).decode('utf-8')
 
     def to_public_key(self):
         return PublicKey.from_private_key(self)

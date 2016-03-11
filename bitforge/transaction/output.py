@@ -33,7 +33,7 @@ class Output(BaseOutput):
         return str(buffer)
 
     def to_hex(self):
-        return encode_hex(self.to_bytes())
+        return encode_hex(self.to_bytes()).decode('utf-8')
 
     @classmethod
     def from_hex(cls, string):

@@ -57,7 +57,7 @@ class Input(BaseInput):
         return str(buffer)
 
     def to_hex(self):
-        return encode_hex(self.to_bytes())
+        return encode_hex(self.to_bytes()).decode('utf-8')
 
     def with_script(self, script):
         return Input(self.tx_id, self.txo_index, script, self.seq_number)

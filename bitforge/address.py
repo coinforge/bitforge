@@ -111,7 +111,7 @@ class Address(BaseAddress):
         return encode_base58h(self.to_bytes())
 
     def to_hex(self):
-        return encode_hex(self.to_bytes())
+        return encode_hex(self.to_bytes()).decode('utf-8')
 
     # TODO: all keys should be from the same network
     # @staticmethod

@@ -75,7 +75,7 @@ class Transaction(BaseTransaction):
         return str(buffer)
 
     def to_hex(self):
-        return encode_hex(self.to_bytes())
+        return encode_hex(self.to_bytes()).decode('utf-8')
 
     def get_id_bytes(self):
         return sha256(sha256(self.to_bytes()))

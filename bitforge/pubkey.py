@@ -76,7 +76,7 @@ class PublicKey(BasePublicKey):
         return utils.encoding.public_pair_to_sec(self.pair, self.compressed)
 
     def to_hex(self):
-        return binascii.hexlify(self.to_bytes())
+        return binascii.hexlify(self.to_bytes()).decode('utf-8')
 
     def to_address(self):
         return Address.from_public_key(self)

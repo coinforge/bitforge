@@ -99,4 +99,4 @@ class TestAddress:
             assert address.network is network
             assert address.type == type
             assert address.to_string() == string_b58h
-            assert encode_hex(address.phash) == string_hex
+            assert encode_hex(address.phash) == string_hex.encode('utf-8')
