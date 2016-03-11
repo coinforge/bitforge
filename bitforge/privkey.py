@@ -107,7 +107,7 @@ class PrivateKey(BasePrivateKey):
     def to_wif(self):
         network_byte    = chr(self.network.wif_prefix)
         secret_bytes    = self.to_bytes()
-        compressed_byte = '\1' if self.compressed else ''
+        compressed_byte = b'\1' if self.compressed else b''
 
         return encode_base58h(network_byte + secret_bytes + compressed_byte)
 
