@@ -1,4 +1,5 @@
 import setuptools
+import sys
 
 setuptools.setup(
   name = 'bitforge',
@@ -15,7 +16,7 @@ setuptools.setup(
 
   setup_requires=['pytest-runner'],
   tests_require=['pytest'],
-  install_requires = ['enum34==1.0.4', 'ecdsa==0.13', 'pytest==2.7.0', 'nose==1.3.6'],
+  install_requires = ['ecdsa==0.13'] + (['enum34==1.0.4'] if sys.version_info < (3, 4) else []),
 
   classifiers = [],
 )
