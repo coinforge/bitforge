@@ -48,7 +48,7 @@ def encode_int(integer, big_endian = True, length = None):
         integer >>= 8
 
     if length is not None:
-        zeros = chr(0) * length # TODO if number can't fit in length, raise
+        zeros = bytearray(length) # TODO if number can't fit in length, raise
         bytes = (bytes + zeros)[:length]
 
     if big_endian:
