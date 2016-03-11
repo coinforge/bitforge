@@ -18,7 +18,7 @@ class TestScript:
         assert s.instructions == (Instruction(OP_0),)
 
     def test_binary_const_pushes(self):
-        for length in xrange(1, 76):
+        for length in range(1, 76):
             opcode = Opcode(length)
             string = 'a' * length
 
