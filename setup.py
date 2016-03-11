@@ -1,14 +1,21 @@
-from distutils.core import setup
-setup(
+import setuptools
+
+setuptools.setup(
   name = 'bitforge',
-  packages = ['bitforge', 'bitforge.utils'], # this must be the same as the name above
   version = '0.3',
-  description = 'A python bitcoin library',
+  url = 'https://github.com/coinforge/bitforge',
+
   author = 'Yemel Jardi',
   author_email = 'angel.jardi@gmail.com',
-  url = 'https://github.com/muun/bitforge', # use the URL to the github repo
-  download_url = 'https://github.com/muun/bitforge/tarball/0.3', # I'll explain this in a second
+
+  description = 'A python bitcoin library',
   keywords = ['bitcoin', 'altcoin'], # arbitrary keywords
+
+  packages = setuptools.find_packages(),
+
+  setup_requires=['pytest-runner'],
+  tests_require=['pytest'],
+  install_requires = ['enum34==1.0.4', 'ecdsa==0.13', 'pytest==2.7.0', 'nose==1.3.6'],
+
   classifiers = [],
-  install_requires = ['enum34==1.0.4', 'ecdsa==0.13', 'pytest==2.7.0', 'nose==1.3.6']
 )
