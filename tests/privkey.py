@@ -7,7 +7,7 @@ from bitforge.privkey import PrivateKey
 
 data = {
     'privkey_hex' : 'f04da984a7d553a0ac51b50bf92d2257d46f65286f2d5da5b83f8ccc114393a7',
-    'privkey_bin' : '\xf0M\xa9\x84\xa7\xd5S\xa0\xacQ\xb5\x0b\xf9-"W\xd4oe(o-]\xa5\xb8?\x8c\xcc\x11C\x93\xa7',
+    'privkey_bin' : b'\xf0M\xa9\x84\xa7\xd5S\xa0\xacQ\xb5\x0b\xf9-"W\xd4oe(o-]\xa5\xb8?\x8c\xcc\x11C\x93\xa7',
     'pubkey': {
         'compress_hex'  : '02e9af68f090bdb18997b676103794e7ed43f9148e882f300d9173c7aac5d497d2',
         'uncompress_hex': '04e9af68f090bdb18997b676103794e7ed43f9148e882f300d9173c7aac5d497d26e4b866169626d83f6230cdc90e0c62a0ae7017579368cb870eb83dcaa1fec3a',
@@ -121,8 +121,8 @@ class TestPrivateKey:
 
 
     def test_from_invalid_wif(self):
-        too_short = encode_base58h('a')
-        too_long  = encode_base58h('a' * 30)
+        too_short = encode_base58h(b'a')
+        too_long  = encode_base58h(b'a' * 30)
 
         with raises(PrivateKey.InvalidWifLength): PrivateKey.from_wif(too_short)
         with raises(PrivateKey.InvalidWifLength): PrivateKey.from_wif(too_long)
