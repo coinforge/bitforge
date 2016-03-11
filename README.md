@@ -68,7 +68,6 @@ in0 = AddressInput(
     address   = Address.from_string('1Dy6qCRsjJ4Y3BYv7m9nf12aUMXD4RWMHC')
 )
 
-
 # 2. Create a MultisigOutput, given a known public keys and required signatures:
 out0 = MultisigOutput(
     amount         = 1000,
@@ -275,7 +274,7 @@ Return a copy of this immutable `Input`, replacing the `script`.
 ##### `.without_script()`
 Return a copy of this immutable `Input`, with an empty (0-byte) `script`.
 
-##### `signed(privkeys, payload)`
+##### `.signed(privkeys, payload)`
 Return a new `Input`, with the same `tx_id`, `txo_index` and `seq_number`. The
 `script` will be replaced by a version including signatures.
 
@@ -284,6 +283,8 @@ To produce the signatures, the `payload` will be signed with all `privkeys`.
 `Input` **does not implement this method**, as the inner workings change with
 different transaction types. Subclasses provide it.
 
+
+#### Subclasses
 
 ##### `AddressInput(tx_id, txo_index, address, seq_number = FINAL_SEQ_NUMBER)`
 
@@ -374,6 +375,9 @@ Serialize this `Output` to Bitcoin protocol format.
 ##### `.to_hex()`
 Serialize this `Output` to Bitcoin protocol format, and return it as a hexadecimal
 string.
+
+
+### Subclasses
 
 ##### `DataOutput(bytes)`
 
