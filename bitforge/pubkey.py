@@ -57,7 +57,7 @@ class PublicKey(BasePublicKey):
         try:
             pair       = utils.encoding.sec_to_public_pair(bytes)
             compressed = utils.encoding.is_sec_compressed(bytes)
-        except:
+        except (utils.encoding.EncodingError, ValueError):
             raise PublicKey.InvalidBinary(bytes)
 
         return PublicKey(pair, network, compressed)

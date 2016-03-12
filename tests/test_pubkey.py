@@ -84,10 +84,10 @@ class TestPublicKey:
         assert pubkey.network is bitforge.networks.default
 
         with raises(PublicKey.InvalidBinary):
-            PublicKey.from_bytes('a')
+            PublicKey.from_bytes(b'a')
 
         with raises(PublicKey.InvalidBinary):
-            PublicKey.from_bytes('a' * 70)
+            PublicKey.from_bytes(b'a' * 70)
 
 
     def test_to_bytes(self):
