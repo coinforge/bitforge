@@ -225,6 +225,9 @@ class Opcode(object):
     def __hash__(self):
         return hash(self.number)
 
+    @property
+    def bytes(self):
+        return bytes(bytearray([self.number]))
 
     @staticmethod
     def for_number(n):

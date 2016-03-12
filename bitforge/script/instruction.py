@@ -105,13 +105,13 @@ class Instruction(BaseInstruction):
     def to_string(self):
         if self.opcode.is_push():
             data_len = len(self.data)
-            data_hex = "0x" + encode_hex(self.data)
+            data_hex = u"0x" + encode_hex(self.data).decode('utf-8')
 
             if self.opcode.is_const_push():
-                return "%d %s" % (data_len, data_hex)
+                return u"%d %s" % (data_len, data_hex)
 
             elif self.opcode.is_var_push():
-                return "%s %d %s" % (self.opcode.name, data_len, data_hex)
+                return u"%s %d %s" % (self.opcode.name, data_len, data_hex)
         else:
             return self.opcode.name
 

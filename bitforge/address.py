@@ -4,6 +4,7 @@ from enum import Enum
 from . import networks, utils
 from .encoding import *
 from .errors import *
+from .compat import chr
 # from script import Script
 
 
@@ -81,7 +82,7 @@ class Address(BaseAddress):
 
     @staticmethod
     def classify_bytes(bytes):
-        version = decode_int(bytes[0])
+        version = bytearray(bytes)[0]
 
         network = networks.find(version, 'pubkeyhash', raises = False)
         if network is not None:

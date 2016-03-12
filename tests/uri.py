@@ -80,7 +80,7 @@ class TestURI:
         assert uri.address.to_string() == '1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj'
 
     def test_str_roundtrip(self):
-        uri = 'bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj?message=Donation+for+project+xyz&other=xD&label=myLabel'
+        uri = 'bitcoin:1DP69gMMvSuYhbnxsi4EJEFufUAbDrEQfj?label=myLabel&message=Donation+for+project+xyz&other=xD'
         assert URI(uri).to_uri() == uri
 
     def test_support_url_ecoded(self):

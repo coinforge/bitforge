@@ -130,10 +130,10 @@ class TestPrivateKey:
         valid = decode_base58h(PrivateKey().to_wif())
 
         with raises(PrivateKey.InvalidCompressionByte):
-            PrivateKey.from_wif(encode_base58h(valid[:-1] + 'a'))
+            PrivateKey.from_wif(encode_base58h(valid[:-1] + b'a'))
 
         with raises(PrivateKey.UnknownNetwork):
-            PrivateKey.from_wif(encode_base58h('a' + valid[1:]))
+            PrivateKey.from_wif(encode_base58h(b'a' + valid[1:]))
 
 
     def test_bitcoind_valid_wifs(self, valid_wifs):

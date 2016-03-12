@@ -14,36 +14,37 @@ class TestScript:
         assert s.instructions == tuple()
 
     def test_binary_single(self):
-        s = Script.from_bytes('\0')
+        s = Script.from_bytes(b'\0')
         assert s.instructions == (Instruction(OP_0),)
 
     def test_binary_const_pushes(self):
         for length in range(1, 76):
             opcode = Opcode(length)
-            string = 'a' * length
+            string = b'a' * length
 
-            s = Script.from_bytes(chr(length) + string)
+            op_bytes = bytes(bytearray([length]))
+            s = Script.from_bytes(op_bytes + string)
 
             assert s.instructions == (Instruction(opcode, string),)
 
     def test_binary_var_pushes(self):
-        s1 = Script.from_bytes(chr(OP_PUSHDATA1.number) + '\3' + 'abc')
-        assert s1.instructions == (Instruction(OP_PUSHDATA1, 'abc'),)
+        s1 = Script.from_bytes(OP_PUSHDATA1.bytes + b'\3' + b'abc')
+        assert s1.instructions == (Instruction(OP_PUSHDATA1, b'abc'),)
 
-        s2 = Script.from_bytes(chr(OP_PUSHDATA2.number) + '\3\0' + 'abc')
-        assert s2.instructions == (Instruction(OP_PUSHDATA2, 'abc'),)
+        s2 = Script.from_bytes(OP_PUSHDATA2.bytes + b'\3\0' + b'abc')
+        assert s2.instructions == (Instruction(OP_PUSHDATA2, b'abc'),)
 
-        s2 = Script.from_bytes(chr(OP_PUSHDATA4.number) + '\3\0\0\0' + 'abc')
-        assert s2.instructions == (Instruction(OP_PUSHDATA4, 'abc'),)
-
-        with raises(Buffer.InsufficientData):
-            Script.from_bytes(chr(OP_PUSHDATA1.number) + '\3' + 'a')
+        s2 = Script.from_bytes(OP_PUSHDATA4.bytes + b'\3\0\0\0' + b'abc')
+        assert s2.instructions == (Instruction(OP_PUSHDATA4, b'abc'),)
 
         with raises(Buffer.InsufficientData):
-            Script.from_bytes(chr(OP_PUSHDATA2.number) + '\3\0' + 'a')
+            Script.from_bytes(OP_PUSHDATA1.bytes + b'\3' + b'a')
 
         with raises(Buffer.InsufficientData):
-            Script.from_bytes(chr(OP_PUSHDATA4.number) + '\3\0\0\0' + 'a')
+            Script.from_bytes(OP_PUSHDATA2.bytes + b'\3\0' + b'a')
+
+        with raises(Buffer.InsufficientData):
+            Script.from_bytes(OP_PUSHDATA4.bytes + b'\3\0\0\0' + b'a')
 
     def test_binary_all_nonpush_opcodes(self):
         opcodes = []
@@ -51,7 +52,7 @@ class TestScript:
             if isinstance(value, Opcode) and not value.is_push():
                 opcodes.append(value)
 
-        bytes = ''.join(chr(opcode.number) for opcode in opcodes)
+        bytes = b''.join(opcode.bytes for opcode in opcodes)
 
         s = Script.from_bytes(bytes)
         assert s.instructions == tuple(map(Instruction, opcodes))

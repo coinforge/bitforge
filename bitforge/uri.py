@@ -54,7 +54,7 @@ class URI(object):
             value = getattr(self, key, False)
             if value: query[key] = value
 
-        query = urlencode(query)
+        query = urlencode(sorted(query.items()))
         return 'bitcoin:' + self.address.to_string() + ('?' + query if query else '')
 
     def __repr__(self):

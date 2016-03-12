@@ -18,7 +18,7 @@ class Buffer(bytearray):
         if len(self) < amount:
             raise Buffer.InsufficientData(len(self), amount)
 
-        ret = str(self[:amount])
+        ret = self[:amount]
         del self[:amount]
         return ret
 

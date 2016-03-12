@@ -10,7 +10,7 @@ data = {
         83234559159195082631296919245646869202106616233090297833190812666019583768233,
         88596170374369955503701867101393570128177433697625675006047409032754219321755
     ),
-    'pubkey_bin' : '\x03\xb8\x05\x17K\xd4\x96\xb2u\xe7\x11\xd5\xa9\xf1\xbc\xba\xa4\xbb\xa1\xa7qv\xdb\xdb_\xdd\x8bv\x9d\xa6*6\xa9',
+    'pubkey_bin' : b'\x03\xb8\x05\x17K\xd4\x96\xb2u\xe7\x11\xd5\xa9\xf1\xbc\xba\xa4\xbb\xa1\xa7qv\xdb\xdb_\xdd\x8bv\x9d\xa6*6\xa9',
     'pubkey_hex' : {
         'compressed'  : '03b805174bd496b275e711d5a9f1bcbaa4bba1a77176dbdb5fdd8b769da62a36a9',
         'uncompressed': '04b805174bd496b275e711d5a9f1bcbaa4bba1a77176dbdb5fdd8b769da62a36a9c3dfa7c8ccb509f9a66efd6d8d1db6b25aa7c100476154b6303d76c28eda099b',

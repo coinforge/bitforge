@@ -50,7 +50,7 @@ class TestAddress:
 
     def test_invalid_version(self):
         with raises(Address.InvalidVersion):
-            Address.from_bytes(chr(15) + 'a' * 20)
+            Address.from_bytes(b'\x0f' + b'a' * 20)
 
     def test_invalid_type(self):
         with raises(Address.InvalidType):

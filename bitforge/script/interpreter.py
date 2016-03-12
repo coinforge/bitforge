@@ -764,9 +764,11 @@ class Interpreter(object):
     @staticmethod
     def cast_to_bool(bytes):
         length = len(bytes)
+        bytes = bytearray(bytes)
+
         for i in range(length):
-            if bytes[0] != '\x00':
-                if i == (length - 1) and bytes[i] == encode_int(0x80):
+            if bytes[0] != 0x00:
+                if i == (length - 1) and bytes[i] == 0x80:
                     return False
                 else:
                     return True

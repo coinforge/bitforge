@@ -41,20 +41,20 @@ def encode_int(integer, big_endian = True, length = None):
     if integer == 0:
         return chr(0) if length is None else chr(0) * length
 
-    bytes = bytearray()
+    data = bytearray()
 
     while integer > 0:
-        bytes.append(integer & 0xff)
+        data.append(integer & 0xff)
         integer >>= 8
 
     if length is not None:
         zeros = bytearray(length) # TODO if number can't fit in length, raise
-        bytes = (bytes + zeros)[:length]
+        data = (data + zeros)[:length]
 
     if big_endian:
-        bytes.reverse()
+        data.reverse()
 
-    return str(bytes)
+    return bytes(data)
 
 
 def decode_int(bytes, big_endian = True):
@@ -148,20 +148,20 @@ def decode_script_number(bytes, f_require_minimal = False, size = 4):
         # If the most-significant-byte - excluding the sign bit - is zero
         # then we're not minimal. Note how this test also rejects the
         # negative-zero encoding, 0x80.
-        if not (decode_int(bytes[-1]) & 0x7f):
+        if not (bytes[-1] & 0x7f):
             # One exception: if there's more than one byte and the most
             # significant bit of the second-most-significant-byte is set
             # it would conflict with the sign bit. An example of this case
             # is +-255, which encode to 0xff00 and 0xff80 respectively.
             # (big-endian).
-            if len(bytes) <= 1 or not (decode_int(bytes[-2]) & 0x80):
+            if len(bytes) <= 1 or not (bytes[-2] & 0x80):
                 raise InvalidMinimalScriptNumber(bytes)
 
     if len(bytes) == 0:
         number = 0
 
-    elif decode_int(bytes[-1]) & 0x80:
-        bytes = bytes[:-1] + encode_int(decode_int(bytes[-1]) & 0x7f)
+    elif bytes[-1] & 0x80:
+        bytes = bytes[:-1] + encode_int(bytes[-1] & 0x7f)
         number = decode_int(bytes, big_endian = False) * -1
 
     else:
@@ -175,15 +175,15 @@ def encode_script_number(integer):
         bytes = bytearray()
 
     elif integer > 0:
-        bytes = encode_int(integer, big_endian = False)
-        if decode_int(bytes[-1]) & 0x80:
+        bytes = bytearray(encode_int(integer, big_endian = False))
+        if bytes[-1] & 0x80:
             bytes += encode_int(0x00)
 
     else:
-        bytes = encode_int(-integer, big_endian = False)
-        if decode_int(bytes[-1]) & 0x80:
+        bytes = bytearray(encode_int(-integer, big_endian = False))
+        if bytes[-1] & 0x80:
             bytes += encode_int(0x80)
         else:
-            bytes = bytes[:-1] + encode_int(decode_int(bytes[-1]) | 0x80)
+            bytes = bytes[:-1] + encode_int(bytes[-1] | 0x80)
 
     return bytes

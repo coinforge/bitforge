@@ -4,6 +4,7 @@ from .errors import *
 from .pubkey import PublicKey
 from .address import Address
 from .encoding import *
+from .compat import chr
 
 
 rng     = random.SystemRandom()
@@ -65,7 +66,7 @@ class PrivateKey(BasePrivateKey):
     @staticmethod
     def from_wif(string):
         try:
-            bytes = decode_base58h(string)
+            bytes = bytearray(decode_base58h(string))
         except InvalidBase58h:
             raise PrivateKey.InvalidBase58h(string)
 
@@ -73,7 +74,7 @@ class PrivateKey(BasePrivateKey):
             compressed = False
 
         elif len(bytes) == 34:
-            if bytes[-1] != '\1':
+            if bytes[-1] != 0x01:
                 raise PrivateKey.InvalidCompressionByte(string)
 
             bytes = bytes[:-1]
@@ -82,7 +83,7 @@ class PrivateKey(BasePrivateKey):
         else:
             raise PrivateKey.InvalidWifLength(bytes)
 
-        network = find_network(ord(bytes[0]), 'wif_prefix')
+        network = find_network(bytes[0], 'wif_prefix')
         secret  = decode_int(bytes[1:])
 
         return PrivateKey(secret, network, compressed)
