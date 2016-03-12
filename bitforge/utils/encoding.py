@@ -46,7 +46,7 @@ def ripemd160(data):
 
 try:
     ripemd160(b'').digest()
-except Exception:
+except ValueError:
     # stupid Google App Engine hashlib doesn't support ripemd160 for some stupid reason
     # import it from pycrypto. You need to add
     # - name: pycrypto

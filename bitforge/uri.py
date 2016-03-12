@@ -5,6 +5,8 @@ except ImportError:
     from urllib import urlencode
 
 from bitforge import Address, Unit
+from bitforge.errors import BitforgeError
+
 
 class URI(object):
 
@@ -13,7 +15,7 @@ class URI(object):
         try:
             URI(uri)
             return True
-        except:
+        except (ValueError, BitforgeError):
             return False
 
     @staticmethod

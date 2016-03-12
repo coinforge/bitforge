@@ -110,7 +110,7 @@ def encode_hex(bytes):
 def decode_hex(string):
     try:
         return binascii.unhexlify(string)
-    except:
+    except (TypeError, binascii.Error):
         # unhexlify() throws 2 different exceptions (length, and alphabet)
         raise InvalidHex(string)
 

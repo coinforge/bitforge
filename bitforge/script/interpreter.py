@@ -1,3 +1,4 @@
+from bitforge.errors import BitforgeError
 from bitforge.transaction import Transaction, Input, Output
 from bitforge.tools import Buffer
 from bitforge.script import Script
@@ -641,7 +642,7 @@ class Interpreter(object):
                     signature = Signature.from_tx_format(sig_bytes)
                     pubkey = PublicKey.from_bytes(pubkey_bytes)
                     f_success = self.tx.verify_signature(signature, pubkey, this.nin, subscript)
-                except:
+                except BitforgeError:
                     f_success = False
 
                 self.stack = self.stack[:-2] + [Interpreter.bool_bytes[f_success]]
@@ -704,7 +705,7 @@ class Interpreter(object):
                         signature = Signature.from_tx_format(sig_bytes)
                         pubkey = PublicKey.from_bytes(pubkey_bytes, False)
                         f_ok = self.tx.verify_signature(signature, pubkey, self.nin, subscript)
-                    except:
+                    except BitforgeError:
                         f_ok = False
 
                     if f_ok:

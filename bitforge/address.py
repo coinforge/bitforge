@@ -42,8 +42,10 @@ class Address(BaseAddress):
 
 
     def __new__(cls, phash, network = networks.default, type = Type.PublicKey):
-        try   : network = networks.find(network)
-        except: raise Address.UnknownNetwork('name', network)
+        try:
+            network = networks.find(network)
+        except networks.UnknownNetwork:
+            raise Address.UnknownNetwork('name', network)
 
         if not isinstance(type, Address.Type):
             raise Address.InvalidType(type)
