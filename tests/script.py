@@ -87,6 +87,15 @@ class TestScript:
         with raises(Script.InvalidPushData):
             Script.from_string('3 010203')
 
+    def test_is_push_only(self):
+        script = Script.from_string('OP_1 OP_16')
+        assert script.is_push_only() is True
+
+        script = Script.from_string('OP_PUSHDATA1 1 0x01')
+        assert script.is_push_only() is True
+
+        script = Script.from_string('OP_1 OP_RETURN')
+        assert script.is_push_only() is False
 
     # def test_to_string_empty(self):
     #     s = Script()

@@ -302,7 +302,7 @@ class Script(BaseScript):
         """
         :returns: if the script is only composed of data pushing opcodes or small int opcodes (OP_0, OP_1, ..., OP_16)
         """
-        return all(lambda i: i.opcode <= Opcode.OP_16, self.instructions)
+        return all(i.opcode <= OP_16 for i in self.instructions)
 
     def __repr__(self):
         return str(self.instructions)
