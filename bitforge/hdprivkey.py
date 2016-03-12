@@ -107,28 +107,28 @@ class HDPrivateKey(BaseHDPrivateKey):
         return self.to_private_key().to_public_key()
 
 
-HDPrivateKey.VersionSize = 4;
-HDPrivateKey.DepthSize = 1;
-HDPrivateKey.ParentFingerPrintSize = 4;
-HDPrivateKey.ChildIndexSize = 4;
-HDPrivateKey.ChainCodeSize = 32;
-HDPrivateKey.PrivateKeySize = 32;
-HDPrivateKey.CheckSumSize = 4;
+HDPrivateKey.VersionSize = 4
+HDPrivateKey.DepthSize = 1
+HDPrivateKey.ParentFingerPrintSize = 4
+HDPrivateKey.ChildIndexSize = 4
+HDPrivateKey.ChainCodeSize = 32
+HDPrivateKey.PrivateKeySize = 32
+HDPrivateKey.CheckSumSize = 4
 
-HDPrivateKey.DataLength = 78;
-HDPrivateKey.SerializedByteSize = 82;
+HDPrivateKey.DataLength = 78
+HDPrivateKey.SerializedByteSize = 82
 
-HDPrivateKey.VersionStart = 0;
-HDPrivateKey.VersionEnd = HDPrivateKey.VersionStart + HDPrivateKey.VersionSize;
-HDPrivateKey.DepthStart = HDPrivateKey.VersionEnd;
-HDPrivateKey.DepthEnd = HDPrivateKey.DepthStart + HDPrivateKey.DepthSize;
-HDPrivateKey.ParentFingerPrintStart = HDPrivateKey.DepthEnd;
-HDPrivateKey.ParentFingerPrintEnd = HDPrivateKey.ParentFingerPrintStart + HDPrivateKey.ParentFingerPrintSize;
-HDPrivateKey.ChildIndexStart = HDPrivateKey.ParentFingerPrintEnd;
-HDPrivateKey.ChildIndexEnd = HDPrivateKey.ChildIndexStart + HDPrivateKey.ChildIndexSize;
-HDPrivateKey.ChainCodeStart = HDPrivateKey.ChildIndexEnd;
-HDPrivateKey.ChainCodeEnd = HDPrivateKey.ChainCodeStart + HDPrivateKey.ChainCodeSize;
-HDPrivateKey.PrivateKeyStart = HDPrivateKey.ChainCodeEnd + 1;
-HDPrivateKey.PrivateKeyEnd = HDPrivateKey.PrivateKeyStart + HDPrivateKey.PrivateKeySize;
-HDPrivateKey.ChecksumStart = HDPrivateKey.PrivateKeyEnd;
-HDPrivateKey.ChecksumEnd = HDPrivateKey.ChecksumStart + HDPrivateKey.CheckSumSize;
+HDPrivateKey.VersionStart = 0
+HDPrivateKey.VersionEnd = HDPrivateKey.VersionStart + HDPrivateKey.VersionSize
+HDPrivateKey.DepthStart = HDPrivateKey.VersionEnd
+HDPrivateKey.DepthEnd = HDPrivateKey.DepthStart + HDPrivateKey.DepthSize
+HDPrivateKey.ParentFingerPrintStart = HDPrivateKey.DepthEnd
+HDPrivateKey.ParentFingerPrintEnd = HDPrivateKey.ParentFingerPrintStart + HDPrivateKey.ParentFingerPrintSize
+HDPrivateKey.ChildIndexStart = HDPrivateKey.ParentFingerPrintEnd
+HDPrivateKey.ChildIndexEnd = HDPrivateKey.ChildIndexStart + HDPrivateKey.ChildIndexSize
+HDPrivateKey.ChainCodeStart = HDPrivateKey.ChildIndexEnd
+HDPrivateKey.ChainCodeEnd = HDPrivateKey.ChainCodeStart + HDPrivateKey.ChainCodeSize
+HDPrivateKey.PrivateKeyStart = HDPrivateKey.ChainCodeEnd + 1
+HDPrivateKey.PrivateKeyEnd = HDPrivateKey.PrivateKeyStart + HDPrivateKey.PrivateKeySize
+HDPrivateKey.ChecksumStart = HDPrivateKey.PrivateKeyEnd
+HDPrivateKey.ChecksumEnd = HDPrivateKey.ChecksumStart + HDPrivateKey.CheckSumSize

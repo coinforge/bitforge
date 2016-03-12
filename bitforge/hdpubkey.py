@@ -104,28 +104,28 @@ class HDPublicKey(BaseHDPublicKey):
         return self.pubkey
 
 
-HDPublicKey.VersionSize = 4;
-HDPublicKey.DepthSize = 1;
-HDPublicKey.ParentFingerPrintSize = 4;
-HDPublicKey.ChildIndexSize = 4;
-HDPublicKey.ChainCodeSize = 32;
-HDPublicKey.PublicKeySize = 33;
-HDPublicKey.CheckSumSize = 4;
+HDPublicKey.VersionSize = 4
+HDPublicKey.DepthSize = 1
+HDPublicKey.ParentFingerPrintSize = 4
+HDPublicKey.ChildIndexSize = 4
+HDPublicKey.ChainCodeSize = 32
+HDPublicKey.PublicKeySize = 33
+HDPublicKey.CheckSumSize = 4
 
-HDPublicKey.DataSize = 78;
-HDPublicKey.SerializedByteSize = 82;
+HDPublicKey.DataSize = 78
+HDPublicKey.SerializedByteSize = 82
 
-HDPublicKey.VersionStart           = 0;
-HDPublicKey.VersionEnd             = HDPublicKey.VersionStart + HDPublicKey.VersionSize;
-HDPublicKey.DepthStart             = HDPublicKey.VersionEnd;
-HDPublicKey.DepthEnd               = HDPublicKey.DepthStart + HDPublicKey.DepthSize;
-HDPublicKey.ParentFingerPrintStart = HDPublicKey.DepthEnd;
-HDPublicKey.ParentFingerPrintEnd   = HDPublicKey.ParentFingerPrintStart + HDPublicKey.ParentFingerPrintSize;
-HDPublicKey.ChildIndexStart        = HDPublicKey.ParentFingerPrintEnd;
-HDPublicKey.ChildIndexEnd          = HDPublicKey.ChildIndexStart + HDPublicKey.ChildIndexSize;
-HDPublicKey.ChainCodeStart         = HDPublicKey.ChildIndexEnd;
-HDPublicKey.ChainCodeEnd           = HDPublicKey.ChainCodeStart + HDPublicKey.ChainCodeSize;
-HDPublicKey.PublicKeyStart         = HDPublicKey.ChainCodeEnd;
-HDPublicKey.PublicKeyEnd           = HDPublicKey.PublicKeyStart + HDPublicKey.PublicKeySize;
-HDPublicKey.ChecksumStart          = HDPublicKey.PublicKeyEnd;
-HDPublicKey.ChecksumEnd            = HDPublicKey.ChecksumStart + HDPublicKey.CheckSumSize;
+HDPublicKey.VersionStart           = 0
+HDPublicKey.VersionEnd             = HDPublicKey.VersionStart + HDPublicKey.VersionSize
+HDPublicKey.DepthStart             = HDPublicKey.VersionEnd
+HDPublicKey.DepthEnd               = HDPublicKey.DepthStart + HDPublicKey.DepthSize
+HDPublicKey.ParentFingerPrintStart = HDPublicKey.DepthEnd
+HDPublicKey.ParentFingerPrintEnd   = HDPublicKey.ParentFingerPrintStart + HDPublicKey.ParentFingerPrintSize
+HDPublicKey.ChildIndexStart        = HDPublicKey.ParentFingerPrintEnd
+HDPublicKey.ChildIndexEnd          = HDPublicKey.ChildIndexStart + HDPublicKey.ChildIndexSize
+HDPublicKey.ChainCodeStart         = HDPublicKey.ChildIndexEnd
+HDPublicKey.ChainCodeEnd           = HDPublicKey.ChainCodeStart + HDPublicKey.ChainCodeSize
+HDPublicKey.PublicKeyStart         = HDPublicKey.ChainCodeEnd
+HDPublicKey.PublicKeyEnd           = HDPublicKey.PublicKeyStart + HDPublicKey.PublicKeySize
+HDPublicKey.ChecksumStart          = HDPublicKey.PublicKeyEnd
+HDPublicKey.ChecksumEnd            = HDPublicKey.ChecksumStart + HDPublicKey.CheckSumSize
