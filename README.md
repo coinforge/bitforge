@@ -1,6 +1,7 @@
 # Bitforge
 
 [![Build Status](https://travis-ci.org/coinforge/bitforge.svg?branch=master&style=flat-square)](https://travis-ci.org/coinforge/bitforge)
+[![Code Health](https://landscape.io/github/coinforge/bitforge/master/landscape.svg?style=flat)](https://landscape.io/github/coinforge/bitforge/master)
 
 The next great Bitcoin library, written in pure Python, **currently in beta and under
 development**.
