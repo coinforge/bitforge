@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from bitforge.errors import BitforgeError
 from bitforge.transaction import Transaction, Input, Output
 from bitforge.tools import Buffer

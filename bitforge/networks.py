@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import sys
 from collections import namedtuple
 from .errors import KeyValueError

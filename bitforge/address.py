@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import binascii, collections
 from enum import Enum
 

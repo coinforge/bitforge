@@ -1,7 +1,10 @@
+from __future__ import unicode_literals
+
 from pytest import raises, fixture, fail
-import bitforge.networks
+
 from bitforge.privkey import PrivateKey
 from bitforge.pubkey import PublicKey
+import bitforge.networks
 
 
 data = {

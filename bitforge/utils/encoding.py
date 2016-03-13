@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 """
 Various utilities useful for converting one Bitcoin format to another, including some
 the human-transcribable format hashed_base58.

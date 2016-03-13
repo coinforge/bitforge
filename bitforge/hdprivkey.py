@@ -1,5 +1,9 @@
-#!/usr/bin/env python
-import os, hmac, hashlib, collections
+from __future__ import unicode_literals
+import collections
+import hashlib
+import hmac
+import os
+
 from . import ecdsa, utils, networks
 from .privkey import PrivateKey
 from .hdpubkey import HDPublicKey

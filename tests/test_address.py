@@ -1,4 +1,6 @@
+from __future__ import unicode_literals
 import json
+
 from pytest import raises, fixture, fail
 
 from bitforge import networks, Address, PublicKey

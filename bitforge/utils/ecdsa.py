@@ -1,4 +1,4 @@
-
+from __future__ import unicode_literals
 """
 Some portions adapted from https://github.com/warner/python-ecdsa/ Copyright (c) 2010 Brian Warner
 who granted its use under this license:

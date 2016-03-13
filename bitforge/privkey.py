@@ -1,4 +1,8 @@
-import random, binascii, collections
+from __future__ import unicode_literals
+import binascii
+import collections
+import random
+
 from . import networks, utils, ecdsa
 from .errors import *
 from .pubkey import PublicKey

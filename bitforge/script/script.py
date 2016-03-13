@@ -1,7 +1,7 @@
-import binascii, collections
+from __future__ import unicode_literals
 from numbers import Number
+import collections
 
-from bitforge.pubkey import PublicKey
 from bitforge.encoding import *
 from bitforge.tools import Buffer
 from bitforge.errors import *
@@ -128,7 +128,7 @@ class Script(BaseScript):
             elif isinstance(item, Number):
                 args = (Opcode(item),)
 
-            elif isinstance(item, str):
+            elif isinstance(item, basestring):
                 args = (Opcode.push_for(len(item)), item)
 
             elif isinstance(item, tuple):
@@ -308,7 +308,7 @@ class Script(BaseScript):
         return str(self.instructions)
 
     def to_bytes(self):
-        return ''.join(i.to_bytes() for i in self.instructions)
+        return b''.join(i.to_bytes() for i in self.instructions)
 
     def to_hex(self):
         return encode_hex(self.to_bytes()).decode('utf-8')

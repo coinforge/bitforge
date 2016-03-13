@@ -1,4 +1,4 @@
-
+from __future__ import unicode_literals
 #
 # Implementation of elliptic curves, for cryptographic applications.
 #

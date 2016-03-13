@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 try:
     from urllib.parse import urlparse, parse_qsl, urlencode
 except ImportError:
@@ -6,6 +8,7 @@ except ImportError:
 
 from bitforge import Address, Unit
 from bitforge.errors import BitforgeError
+from bitforge.compat import string_types
 
 
 class URI(object):
@@ -26,7 +29,7 @@ class URI(object):
         return data
 
     def __init__(self, args):
-        if isinstance(args, str):
+        if isinstance(args, string_types):
             args = URI.parse(args)
             if 'amount' in args:
                 args['amount'] = Unit(btc = float(args['amount'])).satoshis

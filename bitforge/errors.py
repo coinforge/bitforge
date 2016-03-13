@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 class BitforgeError(Exception):
     def __init__(self, *args, **kwargs):

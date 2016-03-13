@@ -1,9 +1,11 @@
+from __future__ import unicode_literals
 import collections
-from .utils.secp256k1 import generator_secp256k1
+
 from . import networks, utils
 from .address import Address
-from .errors import *
 from .encoding import *
+from .errors import *
+from .utils.secp256k1 import generator_secp256k1
 
 
 def find_network(value, attr = 'name'):

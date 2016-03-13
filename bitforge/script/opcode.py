@@ -1,6 +1,7 @@
-import sys, inspect
-from numbers import Number
+from __future__ import unicode_literals
 from functools import total_ordering
+import inspect
+import sys
 
 from bitforge.errors import *
 

@@ -1,4 +1,4 @@
-
+from __future__ import unicode_literals
 
 SIGHASH_ALL = 0x01
 

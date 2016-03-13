@@ -1,13 +1,14 @@
+from __future__ import unicode_literals
 import collections
-from numbers import Number
 
+from bitforge.compat import chr
 from bitforge.encoding import *
 from bitforge.errors import *
-
-from .opcode import *
+from bitforge.script.opcode import *
 
 
 BaseInstruction = collections.namedtuple('BaseInstruction', ['opcode', 'data'])
+
 
 class Instruction(BaseInstruction):
 

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 def inverse_mod( a, m ):
   """Inverse of a mod m."""
