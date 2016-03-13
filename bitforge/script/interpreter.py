@@ -56,7 +56,7 @@ class Interpreter(object):
             return False
 
         if self.flags & Interpreter.SCRIPT_VERIFY_P2SH:
-            stack_copy = list(this.stack)
+            stack_copy = list(self.stack)
 
         stack = self.stack
         self.initialize()
@@ -320,7 +320,7 @@ class Interpreter(object):
 
             elif instruction.opcode == OP_2DROP:
                 # (x1, x2 -- )
-                if len(self.stack.length < 2):
+                if len(self.stack) < 2:
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
@@ -328,7 +328,7 @@ class Interpreter(object):
 
             elif instruction.opcode == OP_2DUP:
                 # (x1, x2 -- x1 x2 x1 x2)
-                if len(self.stack.length < 2):
+                if len(self.stack) < 2:
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
@@ -337,7 +337,7 @@ class Interpreter(object):
 
             elif instruction.opcode == OP_3DUP:
                 # (x1, x2, x3 -- x1 x2 x3 x1 x2 x3)
-                if len(self.stack.length < 3):
+                if len(self.stack) < 3:
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
@@ -346,7 +346,7 @@ class Interpreter(object):
 
             elif instruction.opcode == OP_2OVER:
                 # (x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2)
-                if len(self.stack.length < 4):
+                if len(self.stack) < 4:
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
@@ -355,7 +355,7 @@ class Interpreter(object):
 
             elif instruction.opcode == OP_2ROT:
                 # (x1 x2 x3 x4 x5 x6 -- x3 x4 x5 x6 x1 x2)
-                if len(self.stack.length < 6):
+                if len(self.stack) < 6:
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
@@ -364,7 +364,7 @@ class Interpreter(object):
 
             elif instruction.opcode == OP_2SWAP:
                 # (x1 x2 x3 x4 -- x3 x4 x1 x2)
-                if len(self.stack.length < 4):
+                if len(self.stack) < 4:
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
@@ -373,7 +373,7 @@ class Interpreter(object):
 
             elif instruction.opcode == OP_IFDUP:
                 # (x - 0 | x x)
-                if len(self.stack.length < 1):
+                if len(self.stack) < 1:
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
@@ -632,7 +632,7 @@ class Interpreter(object):
                 # Subset of script starting at the most recent codeseparator
                 # CScript scriptCode(pbegincodehash, pend);
                 from_instruction = self.pbegincodehash
-                subscript = Script(self.instructions[from_instruction:])
+                subscript = Script(self.script.instructions[from_instruction:])
 
                 # Drop the signature, since there's no way for a signature to sign itself
                 subscript.remove_opcode_by_data(sig_bytes)
@@ -643,7 +643,7 @@ class Interpreter(object):
                 try:
                     signature = Signature.from_tx_format(sig_bytes)
                     pubkey = PublicKey.from_bytes(pubkey_bytes)
-                    f_success = self.tx.verify_signature(signature, pubkey, this.nin, subscript)
+                    f_success = self.tx.verify_signature(signature, pubkey, self.nin, subscript)
                 except BitforgeError:
                     f_success = False
 
@@ -688,7 +688,7 @@ class Interpreter(object):
 
                 # Subset of script starting at the most recent codeseparator
                 from_instruction = self.pbegincodehash
-                subscript = Script(self.instructions[from_instruction:])
+                subscript = Script(self.script.instructions[from_instruction:])
 
                 for i in range(sigs_count):
                     sig_bytes = self.stack[-isig-i]
