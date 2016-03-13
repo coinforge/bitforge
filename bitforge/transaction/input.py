@@ -76,7 +76,7 @@ class Input(BaseInput):
         # By the time this method is invoked, the placeholder script (1) should
         # already be waiting in our `script` property, but (2) we can't know
         # about. See Input subclasses.
-        raise UnknownSignatureMethod()
+        raise Input.UnknownSignatureMethod()
 
     @classmethod
     def from_hex(cls, string):
