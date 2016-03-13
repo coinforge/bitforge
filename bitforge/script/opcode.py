@@ -262,13 +262,13 @@ class Opcode(object):
     @staticmethod
     def var_push_for(length):
         if length < 1:
-            raise InvalidPushLength(length)
+            raise Opcode.InvalidPushLength(length)
 
         for opcode in [OP_PUSHDATA1, OP_PUSHDATA2, OP_PUSHDATA4]:
             if length <= Opcode.data_length_max(opcode):
                 return opcode
 
-        raise InvalidPushLength(length)
+        raise Opcode.InvalidPushLength(length)
 
     @staticmethod
     def push_for(length):
