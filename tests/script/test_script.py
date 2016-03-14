@@ -112,7 +112,6 @@ class TestScript:
         assert all(map(Script.is_pay_to_pubkey_in, yes))
         assert not any(map(Script.is_pay_to_pubkey_in, no))
 
-
     def test_is_pay_to_pubkey_out(self):
         yes = [
             Script.pay_to_pubkey_out(Address('a' * 20)),
@@ -126,3 +125,35 @@ class TestScript:
 
         assert all(map(Script.is_pay_to_pubkey_out, yes))
         assert not any(map(Script.is_pay_to_pubkey_out, no))
+
+    def test_is_pay_to_script_out(self):
+        embedded = Script.pay_to_pubkey_out(Address('x' * 20))
+
+        yes = [ Script.pay_to_script_out(embedded) ]
+
+        no = [
+            Script(),
+            Script.pay_to_pubkey_out(Address('a' * 20)),
+            Script.pay_to_script_in(embedded, [ 'foo' ])
+        ]
+
+        assert all(map(Script.is_pay_to_script_out, yes))
+        assert not any(map(Script.is_pay_to_script_out, no))
+
+    def test_is_pay_to_script_in(self):
+        embedded = Script.pay_to_pubkey_out(Address('x' * 20))
+
+        yes = [
+            Script.pay_to_script_in(embedded, [ 'foo' ]),
+            Script.pay_to_script_in(Script.compile([ 'bar' ]), [ 'foo' ]),
+            Script.pay_to_script_in(Script.compile([ 'baz' ]), [ 'one', 'two' ]),
+        ]
+
+        no = [
+            Script(),
+            # Script.pay_to_pubkey_in(Address('a' * 20), 'foo'),
+            # Script.pay_to_script_out(Script())
+        ]
+
+        assert all(map(Script.is_pay_to_script_in, yes))
+        assert not any(map(Script.is_pay_to_script_in, no))

@@ -166,8 +166,8 @@ class Opcode(object):
     class UnknownOpcodeNumber(Error, NumberError):
         "No known operation numbered {number}"
 
-    class InvalidConstPushLength(Error, StringError):
-        "No constant push opcode can push {length} bytes (only [1-75])"
+    class InvalidConstPushLength(Error, NumberError):
+        "No constant push opcode can push {number} bytes (only [1-75])"
 
     class InvalidPushLength(Error, NumberError):
         "No Opcode can push {number} bytes"

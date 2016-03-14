@@ -52,6 +52,9 @@ class Instruction(BaseInstruction):
         opcode = Opcode.push_for(len(bytes))
         return Instruction(opcode, bytes)
 
+    def is_push(self):
+        return self.opcode.is_push()
+
     def is_minimal_push(self):
         """
         Comes from bitcoind's script interpreter CheckMinimalPush function.
