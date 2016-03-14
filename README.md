@@ -53,7 +53,7 @@ out0 = AddressOutput(
 tx = Transaction(inputs = [ in0 ], outputs = [ out0 ])
 
 # 4. Sign the first Input:
-signed_tx = tx.signed([ privkey ], 0)
+signed_tx = tx.sign([ privkey ], 0)
 ```
 
 
@@ -80,7 +80,7 @@ out0 = MultisigOutput(
 tx = Transaction(inputs = [ in0 ], outputs = [ out0 ])
 
 # 4. Sign the first Input:
-signed_tx = tx.signed([ privkey ], 0)
+signed_tx = tx.sign([ privkey ], 0)
 ```
 
 
@@ -234,7 +234,7 @@ type prefix.
 A `Transaction` `Input`. `tx_id` and `txo_index` point to an unspent transaction
 output.
 
-The `Input` class can be instantiated directly, but the `signed()` method will
+The `Input` class can be instantiated directly, but the `sign()` method will
 `raise`. To really work with `Inputs`, you should use or create a subclass.
 These are available out-of-the-box, and described below:
 
@@ -275,7 +275,7 @@ Return a copy of this immutable `Input`, replacing the `script`.
 ##### `.without_script()`
 Return a copy of this immutable `Input`, with an empty (0-byte) `script`.
 
-##### `.signed(privkeys, payload)`
+##### `.sign(privkeys, payload)`
 Return a new `Input`, with the same `tx_id`, `txo_index` and `seq_number`. The
 `script` will be replaced by a version including signatures.
 
@@ -290,7 +290,7 @@ different transaction types. Subclasses provide it.
 ##### `AddressInput(tx_id, txo_index, address, seq_number = FINAL_SEQ_NUMBER)`
 
 A _Pay-to-Pubkey-Hash_ `Input`, that can redeem funds sent to an `Address`. The
-`signed()` method takes a list of `privkeys` with exactly `1` key.
+`sign()` method takes a list of `privkeys` with exactly `1` key.
 
 This is the counterpart of `AddressOutput`.
 
@@ -433,7 +433,7 @@ Serialize this `Transaction` to Bitcoin protocol format.
 Serialize this `Transaction` to Bitcoin protocol format, and return it as a
 hexadecimal string.
 
-##### `signed(privkeys, txi_index)`
+##### `sign(privkeys, txi_index)`
 
 Return a copy of this `Transaction`, where the `Input` at `txi_index` has been
 signed with all `privkeys`.

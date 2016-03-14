@@ -87,7 +87,7 @@ class Transaction(BaseTransaction):
     def with_inputs(self, inputs):
         return Transaction(inputs, self.outputs, self.lock_time, self.version)
 
-    def signed(self, privkeys, txi_index, sigtype = SIGHASH_ALL):
+    def sign(self, privkeys, txi_index, sigtype = SIGHASH_ALL):
         # A Transaction Input is signed in 4 steps:
         #   1. Create a simplified Transaction without data from other Inputs
         #   2. Sign the simplified Transaction data, discard it, keep the signature
@@ -120,7 +120,7 @@ class Transaction(BaseTransaction):
         # PrivateKeys. Each Input subclass knows how to handle this process. The
         # signed Input will loose the placeholder Script and get a real one.
 
-        signed_input = self.inputs[txi_index].signed(privkeys, payload, sigtype)
+        signed_input = self.inputs[txi_index].sign(privkeys, payload, sigtype)
 
         # 4. Build a new Transaction, restoring the other Input Scripts, and
         # setting this Input to the new version including the signature:
