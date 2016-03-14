@@ -205,6 +205,9 @@ class Opcode(object):
         # where `n` is the integer in the 1/2/4 bytes following the opcode
         return self in (OP_PUSHDATA1, OP_PUSHDATA2, OP_PUSHDATA4)
 
+    def equal_without_data(self, other):
+        return  self == other or (self.is_push() and other.is_push())
+
     def __repr__(self):
         if self.is_const_push():
             return "<Opcode PUSH %d BYTES>" % self.number

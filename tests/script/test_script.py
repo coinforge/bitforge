@@ -6,6 +6,7 @@ from bitforge.script.opcode import *
 import bitforge.script.opcode as opcode_module
 from bitforge.encoding import *
 from bitforge.tools import Buffer
+from bitforge import Address
 
 
 class TestScript:
@@ -97,6 +98,31 @@ class TestScript:
         script = Script.from_string('OP_1 OP_RETURN')
         assert script.is_push_only() is False
 
-    # def test_to_string_empty(self):
-    #     s = Script()
-    #     assert s.to_string() == ''
+    def test_is_pay_to_pubkey_in(self):
+        yes = [
+            Script.pay_to_pubkey_in(Address('a' * 20), 'foo'),
+            Script.pay_to_pubkey_in(Address('x' * 20), 'bar')
+        ]
+
+        no = [
+            Script(),
+            Script.pay_to_pubkey_out(Address('a' * 20))
+        ]
+
+        assert all(map(Script.is_pay_to_pubkey_in, yes))
+        assert not any(map(Script.is_pay_to_pubkey_in, no))
+
+
+    def test_is_pay_to_pubkey_out(self):
+        yes = [
+            Script.pay_to_pubkey_out(Address('a' * 20)),
+            Script.pay_to_pubkey_out(Address('x' * 20))
+        ]
+
+        no = [
+            Script(),
+            Script.pay_to_pubkey_in(Address('a' * 20), 'foo')
+        ]
+
+        assert all(map(Script.is_pay_to_pubkey_out, yes))
+        assert not any(map(Script.is_pay_to_pubkey_out, no))

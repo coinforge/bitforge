@@ -5,6 +5,7 @@ import collections
 from bitforge.encoding import *
 from bitforge.tools import Buffer
 from bitforge.errors import *
+from bitforge import Address
 
 from .opcode import *
 from .instruction import Instruction
@@ -38,6 +39,15 @@ class Script(BaseScript):
     def __new__(cls, instructions = None):
         instructions = tuple(instructions if instructions is not None else [])
         return super(Script, cls).__new__(cls, instructions)
+
+    def equal_without_data(self, other):
+        if len(self.instructions) != len(other.instructions):
+            return False
+
+        return all(
+            self.instructions[i].opcode.equal_without_data(other.instructions[i].opcode)
+            for i in range(len(self.instructions))
+        )
 
     @staticmethod
     def from_bytes(bytes):
@@ -153,11 +163,21 @@ class Script(BaseScript):
         ])
 
     @staticmethod
+    def is_pay_to_pubkey_out(script):
+        model = Script.pay_to_pubkey_out(Address('a' * 20))
+        return script.equal_without_data(model)
+
+    @staticmethod
     def pay_to_pubkey_in(pubkey, signature):
         return Script.compile([
             signature,
             pubkey.to_bytes()
         ])
+
+    @staticmethod
+    def is_pay_to_pubkey_in(script):
+        model = Script.pay_to_pubkey_in(Address('a' * 20), 'f' * 70)
+        return script.equal_without_data(model)
 
     @staticmethod
     def pay_to_script_out(script):
