@@ -1,6 +1,10 @@
 from __future__ import unicode_literals
 
-SIGHASH_ALL = 0x01
+
+SIGHASH_ALL	         = 0x01
+SIGHASH_NONE         = 0x02
+SIGHASH_SINGLE       = 0x03
+SIGHASH_ANYONECANPAY = 0x80
 
 
 def validate_signature(sig):

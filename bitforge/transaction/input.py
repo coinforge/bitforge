@@ -66,7 +66,7 @@ class Input(BaseInput):
     def without_script(self):
         return self.with_script(Script())
 
-    def signed(self, privkeys, payload):
+    def signed(self, privkeys, payload, sigtype = SIGHASH_ALL):
         # Signing an Input requires knowledge of two things:
         #
         # 1. The placeholder Script that will be used in place of the signed one,
@@ -112,13 +112,13 @@ class AddressInput(Input):
 
         return super(AddressInput, cls).__new__(cls, tx_id, txo_index, placeholder_script, seq_number)
 
-    def signed(self, privkeys, payload):
+    def signed(self, privkeys, payload, sigtype = SIGHASH_ALL):
         if len(privkeys) != 1:
             raise AddressInput.InvalidSignatureCount(1, len(privkeys))
 
         signed_script = Script.pay_to_pubkey_in(
             pubkey    = privkeys[0].to_public_key(),
-            signature = privkeys[0].sign(payload) + chr(SIGHASH_ALL)
+            signature = privkeys[0].sign(payload) + chr(sigtype)
         )
 
         return self.with_script(signed_script)
@@ -131,13 +131,13 @@ class ScriptInput(Input):
 
         return super(ScriptInput, cls).__new__(cls, tx_id, txo_index, script, seq_number)
 
-    def signed(self, privkeys, payload):
+    def signed(self, privkeys, payload, sigtype = SIGHASH_ALL):
         # Signing a ScriptInput requires embedding the redeem Script (already
         # set as placeholder in our `script` property by the time this method
         # is invoked) in a standard Pay-to-Script Script.
         signed_script = Script.pay_to_script_in(
             script     = self.script,
-            signatures = [ pk.sign(payload) + chr(SIGHASH_ALL) for pk in privkeys ]
+            signatures = [ pk.sign(payload) + chr(sigtype) for pk in privkeys ]
         )
 
         return self.with_script(signed_script)
