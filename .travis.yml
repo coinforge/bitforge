@@ -7,4 +7,4 @@ python:
 # command to install dependencies
 install: "python setup.py install"
 # command to run tests
-script: py.test tests/all.py
+script: "python setup.py test"
