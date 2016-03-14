@@ -3,7 +3,8 @@ class BitforgeError(Exception):
     def __init__(self, *args, **kwargs):
         self.cause = kwargs.pop('cause', None)
         self.prepare(*args, **kwargs)
-        self.message = self.__doc__.format(**self.__dict__)
+        message = self.__doc__.format(**self.__dict__)
+        super(BitforgeError, self).__init__(message)
 
     def prepare(self):
         pass
