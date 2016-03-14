@@ -4,7 +4,11 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+before_install:
+  - pip install codecov
 # command to install dependencies
 install: "python setup.py install"
 # command to run tests
-script: py.test tests/all.py
+script: python setup.py test
+after_success:
+  - codecov

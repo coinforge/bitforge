@@ -15,7 +15,7 @@ setuptools.setup(
   packages = setuptools.find_packages(),
 
   setup_requires=['pytest-runner'],
-  tests_require=['pytest'],
+  tests_require=['pytest', 'pytest-cov'],
   install_requires = ['ecdsa==0.13'] + (['enum34==1.0.4'] if sys.version_info < (3, 4) else []),
 
   classifiers = [],
