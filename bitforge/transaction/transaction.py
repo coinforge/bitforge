@@ -84,7 +84,7 @@ class Transaction(BaseTransaction):
     def get_id(self):
         return encode_hex(self.get_id_bytes())
 
-    def with_inputs(self, inputs):
+    def replace_inputs(self, inputs):
         return Transaction(inputs, self.outputs, self.lock_time, self.version)
 
     def sign(self, privkeys, txi_index, sigtype = SIGHASH_ALL):
@@ -102,11 +102,11 @@ class Transaction(BaseTransaction):
         # there already, manually placed or auto-created by Input subclasses.
 
         simplified_inputs = (
-            input.without_script() if i != txi_index else input
+            input.remove_script() if i != txi_index else input
             for i, input in enumerate(self.inputs)
         )
 
-        simplified_transaction = self.with_inputs(simplified_inputs)
+        simplified_transaction = self.replace_inputs(simplified_inputs)
 
         # 2. Write the payload we're going to sign, which is the serialization
         # of the simplified transaction, with an extra 4 bytes for the signature
@@ -130,7 +130,7 @@ class Transaction(BaseTransaction):
             for i, input in enumerate(self.inputs)
         )
 
-        return self.with_inputs(new_inputs) # voila!
+        return self.replace_inputs(new_inputs) # voila!
 
 
     @staticmethod

@@ -269,10 +269,10 @@ Serialize this `Input` to Bitcoin protocol format.
 Serialize this `Input` to Bitcoin protocol format, and return it as a hexadecimal
 string.
 
-##### `.with_script(script)`
+##### `.replace_script(script)`
 Return a copy of this immutable `Input`, replacing the `script`.
 
-##### `.without_script()`
+##### `.remove_script()`
 Return a copy of this immutable `Input`, with an empty (0-byte) `script`.
 
 ##### `.sign(privkeys, payload)`

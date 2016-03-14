@@ -60,11 +60,11 @@ class Input(BaseInput):
     def to_hex(self):
         return encode_hex(self.to_bytes()).decode('utf-8')
 
-    def with_script(self, script):
+    def replace_script(self, script):
         return Input(self.tx_id, self.txo_index, script, self.seq_number)
 
-    def without_script(self):
-        return self.with_script(Script())
+    def remove_script(self):
+        return self.replace_script(Script())
 
     def sign(self, privkeys, payload, sigtype = SIGHASH_ALL):
         # Signing an Input requires knowledge of two things:
@@ -121,7 +121,7 @@ class AddressInput(Input):
             signature = privkeys[0].sign(payload) + chr(sigtype)
         )
 
-        return self.with_script(signed_script)
+        return self.replace_script(signed_script)
 
 
 class ScriptInput(Input):
@@ -140,7 +140,7 @@ class ScriptInput(Input):
             signatures = [ pk.sign(payload) + chr(sigtype) for pk in privkeys ]
         )
 
-        return self.with_script(signed_script)
+        return self.replace_script(signed_script)
 
 
 class MultisigInput(ScriptInput):
