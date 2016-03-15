@@ -12,7 +12,7 @@ from .utils.intbytes import int_from_bytes, int_to_bytes, to_bytes
 # TODO: should be in networks.py
 # TODO: check which of these are network dependent
 MIN_SEED_LEN     = 32
-HMAC_MAGIC_KEY   = 'Bitcoin seed'
+HMAC_MAGIC_KEY   = b'Bitcoin seed'
 ROOT_FINGERPRINT = 0
 HARDENED_START   = 0x80000000
 
