@@ -324,7 +324,7 @@ class Interpreter(object):
                     self.errstr = 'SCRIPT_ERR_INVALID_STACK_OPERATION'
                     return False
 
-                self.stack = stack[:-2]
+                self.stack = self.stack[:-2]
 
             elif instruction.opcode == OP_2DUP:
                 # (x1, x2 -- x1 x2 x1 x2)
