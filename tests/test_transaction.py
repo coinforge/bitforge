@@ -1,6 +1,9 @@
 from pytest import raises
 
-from bitforge import Transaction, Input, Output, DataOutput, Script
+from bitforge import PrivateKey
+from bitforge import Transaction, Input, Output
+from bitforge.transaction import AddressOutput, ScriptOutput, DataOutput
+from bitforge.script import Script, PayToPubkeyOut, PayToScriptOut, OpReturnOut
 
 
 class MockInput(Input):
@@ -44,4 +47,19 @@ class TestOutput:
 
     def test_too_much_data(self):
         with raises(DataOutput.TooMuchData):
-            DataOutput("0" * 81)
+            DataOutput.create("0" * 81)
+
+    def test_classify(self):
+        privkey = PrivateKey()
+        pubkey = privkey.to_public_key()
+        address = pubkey.to_address()
+        script = Script()
+
+        o_p2pk = Output.create(1, PayToPubkeyOut.create(address))
+        assert isinstance(o_p2pk, AddressOutput)
+
+        o_p2s = Output.create(1, PayToScriptOut.create(script))
+        assert isinstance(o_p2s, ScriptOutput)
+
+        o_data = Output.create(1, OpReturnOut.create('data'))
+        assert isinstance(o_data, DataOutput)

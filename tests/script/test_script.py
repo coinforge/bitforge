@@ -2,11 +2,12 @@ import pytest, inspect
 from pytest import raises, fixture, fail
 
 from bitforge.script import *
+from bitforge.script.script import SCRIPT_SUBCLASSES
 from bitforge.script.opcode import *
 import bitforge.script.opcode as opcode_module
 from bitforge.encoding import *
 from bitforge.tools import Buffer
-from bitforge import Address
+from bitforge import Address, PrivateKey
 
 
 class TestScript:
@@ -100,13 +101,13 @@ class TestScript:
 
     def test_is_pay_to_pubkey_in(self):
         yes = [
-            PayToPubkeyIn(Address('a' * 20), 'foo'),
-            PayToPubkeyIn(Address('x' * 20), 'bar')
+            PayToPubkeyIn.create(Address('a' * 20), 'foo'),
+            PayToPubkeyIn.create(Address('x' * 20), 'bar')
         ]
 
         no = [
             Script(),
-            PayToPubkeyOut(Address('a' * 20))
+            PayToPubkeyOut.create(Address('a' * 20))
         ]
 
         assert all(map(PayToPubkeyIn.is_valid, yes))
@@ -114,46 +115,111 @@ class TestScript:
 
     def test_is_pay_to_pubkey_out(self):
         yes = [
-            PayToPubkeyOut(Address('a' * 20)),
-            PayToPubkeyOut(Address('x' * 20))
+            PayToPubkeyOut.create(Address('a' * 20)),
+            PayToPubkeyOut.create(Address('x' * 20))
         ]
 
         no = [
             Script(),
-            PayToPubkeyIn(Address('a' * 20), 'foo')
+            PayToPubkeyIn.create(Address('a' * 20), 'foo')
         ]
 
         assert all(map(PayToPubkeyOut.is_valid, yes))
         assert not any(map(PayToPubkeyOut.is_valid, no))
 
     def test_is_pay_to_script_out(self):
-        embedded = PayToPubkeyOut(Address('x' * 20))
+        embedded = PayToPubkeyOut.create(Address('x' * 20))
 
-        yes = [ PayToScriptOut(embedded) ]
+        yes = [ PayToScriptOut.create(embedded) ]
 
         no = [
             Script(),
-            PayToPubkeyOut(Address('a' * 20)),
-            PayToScriptIn(embedded, [ 'foo' ])
+            PayToPubkeyOut.create(Address('a' * 20)),
+            PayToScriptIn.create(embedded, [ 'foo' ])
         ]
 
         assert all(map(PayToScriptOut.is_valid, yes))
         assert not any(map(PayToScriptOut.is_valid, no))
 
     def test_is_pay_to_script_in(self):
-        embedded = PayToPubkeyOut(Address('x' * 20))
+        embedded = PayToPubkeyOut.create(Address('x' * 20))
 
         yes = [
-            PayToScriptIn(embedded, [ 'foo' ]),
-            PayToScriptIn(Script.compile([ 'bar' ]), [ 'foo' ]),
-            PayToScriptIn(Script.compile([ 'baz' ]), [ 'one', 'two' ]),
+            PayToScriptIn.create(embedded, [ 'foo' ]),
+            PayToScriptIn.create(Script.compile([ 'bar' ]), [ 'foo' ]),
+            PayToScriptIn.create(Script.compile([ 'baz' ]), [ 'one', 'two' ]),
         ]
 
         no = [
             Script(),
-            PayToPubkeyIn(Address('a' * 20), 'foo'),
-            PayToScriptOut(Script())
+            PayToPubkeyIn.create(Address('a' * 20), 'foo'),
+            PayToScriptOut.create(Script())
         ]
 
         assert all(map(PayToScriptIn.is_valid, yes))
         assert not any(map(PayToScriptIn.is_valid, no))
+
+    def test_p2pkh_getters(self):
+        privkey = PrivateKey()
+        pubkey = privkey.to_public_key()
+        address = pubkey.to_address()
+        signature = 'foo'
+
+        i_script = PayToPubkeyIn.create(pubkey, signature)
+        o_script = PayToPubkeyOut.create(address)
+
+        assert i_script.get_public_key() == pubkey
+        assert i_script.get_signature() == signature
+        assert o_script.get_address_hash() == address.phash
+
+    def test_p2sh_getters(self):
+        privkey = PrivateKey()
+        pubkey = privkey.to_public_key()
+        address = pubkey.to_address()
+        embedded = Script.compile([ OP_0, 'bar', OP_1 ])
+        signatures = [ 'foo', 'bar' ]
+
+        i_script = PayToScriptIn.create(embedded, signatures)
+        o_script = PayToScriptOut.create(embedded)
+
+        assert i_script.get_script() == embedded
+        assert i_script.get_signatures() == signatures
+        assert o_script.get_script_hash() == embedded.to_hash()
+
+    def test_op_return_getters(self):
+        data = 'foo bar baz'
+        script = OpReturnOut.create(data)
+        assert script.get_data() == data
+
+    def test_redeem_multisig_getters(self):
+        privkeys = [ PrivateKey(), PrivateKey() ]
+        pubkeys = [ privkey.to_public_key() for privkey in privkeys ]
+        signatures = [ 'foo', 'bar' ]
+
+        script = RedeemMultisig.create(pubkeys, 2)
+
+        assert script.get_min_signatures() == 2
+        assert script.get_public_keys() == pubkeys
+
+    def test_classify(self):
+        privkey = PrivateKey()
+        pubkey = privkey.to_public_key()
+        address = pubkey.to_address()
+        signature = 'foo'
+        script = RedeemMultisig.create([ pubkey ], 1)
+
+        class_to_arguments = {
+            PayToPubkeyIn : [ pubkey, signature ],
+            PayToPubkeyOut: [ address ],
+            PayToScriptIn : [ script, [signature] ],
+            PayToScriptOut: [ script ],
+            RedeemMultisig: [ [pubkey], 1 ],
+            OpReturnOut   : [ 'data' ]
+        }
+
+        for cls, args in class_to_arguments.items():
+            special = cls.create(*args)
+            generic = Script(special.instructions)
+
+            assert Script.classify(special) == Script.classify(generic) == cls
+            assert isinstance(Script.create(special.instructions), cls)
