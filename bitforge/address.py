@@ -117,24 +117,5 @@ class Address(BaseAddress):
     def to_hex(self):
         return encode_hex(self.to_bytes()).decode('utf-8')
 
-    # TODO: all keys should be from the same network
-    # @staticmethod
-    # def from_public_keys(pubkeys, threshold):
-    #     return Address.from_script(
-    #         Script.buildMultisigOut(pubkeys, threshold),
-    #         pubkeys[0].network
-    #     )
-
-    # @staticmethod
-    # def from_script(script, network = networks.default):
-    #     if not isinstance(script, Script):
-    #         raise ValueError('Expected instance of Script, not %s' % script)
-    #
-    #     return Address(
-    #         raw     = utils.encoding.hash160(script.to_bytes()),
-    #         type    = Address.Type.Script,
-    #         network = network
-    #     )
-
     def __repr__(self):
         return "<Address: %s, type: %s, network: %s>" % (self.to_string(), self.type.name, self.network.name)

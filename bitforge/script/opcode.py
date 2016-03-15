@@ -200,6 +200,7 @@ class Opcode(object):
     def number_value(self):
         if not self.is_number():
             raise Opcode.WrongOpcodeType(self)
+
         return 0 if self == OP_0 else (self.number - OP_1.number + 1)
 
     def is_push(self):

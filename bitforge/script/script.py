@@ -5,6 +5,7 @@ import collections
 from bitforge.encoding import *
 from bitforge.tools import Buffer
 from bitforge.errors import *
+from bitforge import PublicKey
 
 from .opcode import *
 from .instruction import Instruction
@@ -27,7 +28,7 @@ class Script(BaseScript):
         "Push size must be a number, got {string}"
 
     class InvalidPushData(Error, StringError):
-        "Push data must be hexa encoded and start with 0x, got {string}"
+        "Push data must be hex encoded and start with 0x, got {string}"
 
     class InvalidPushDataLength(Error, NumberError):
         "Push data length doesn't match push size, got {number}"
@@ -50,7 +51,7 @@ class Script(BaseScript):
 
     @staticmethod
     def classify(script):
-        for subcls in SUBCLASSES:
+        for subcls in SCRIPT_SUBCLASSES:
             if subcls.is_valid(script):
                 return subcls
 
@@ -170,34 +171,44 @@ class Script(BaseScript):
 
 class PayToPubkeyIn(Script):
 
+    @classmethod
+    def create(cls, pubkey, signature):
+        schematic = [ signature, pubkey.to_bytes() ]
+        return cls(to_instructions(schematic))
+
     @staticmethod
     def is_valid(script):
         return script.get_structure() == ('PUSH', 'PUSH')
 
-    def __new__(cls, pubkey, signature):
-        schematic = [ signature, pubkey.to_bytes() ]
-        return super(PayToPubkeyIn, cls).__new__(cls, to_instructions(schematic))
+    def get_public_key(self):
+        return PublicKey.from_bytes(self.instructions[1].data)
+
+    def get_signature(self):
+        return self.instructions[0].data
 
 
 class PayToPubkeyOut(Script):
+
+    @classmethod
+    def create(cls, address):
+        schematic = [ OP_DUP, OP_HASH160, address.phash, OP_EQUALVERIFY, OP_CHECKSIG ]
+        return cls(to_instructions(schematic))
 
     @staticmethod
     def is_valid(script):
         return script.get_structure() == (OP_DUP, OP_HASH160, 'PUSH', OP_EQUALVERIFY, OP_CHECKSIG)
 
-    def __new__(cls, address):
-        schematic = [
-            OP_DUP,
-            OP_HASH160,
-            address.phash,
-            OP_EQUALVERIFY,
-            OP_CHECKSIG
-        ]
+    def get_address_hash(self):
+        return self.instructions[2].data
 
-        return super(PayToPubkeyOut, cls).__new__(cls, to_instructions(schematic))
 
 
 class PayToScriptIn(Script):
+
+    @classmethod
+    def create(cls, script, signatures):
+        schematic = [OP_0] + signatures + [script.to_bytes()]
+        return cls(to_instructions(schematic))
 
     @staticmethod
     def is_valid(script):
@@ -208,34 +219,56 @@ class PayToScriptIn(Script):
             all(op == 'PUSH' for op in structure[1:])
         )
 
-    def __new__(cls, script, signatures):
-        schematic = [OP_0] + signatures + [script.to_bytes()]
-        return super(PayToScriptIn, cls).__new__(cls, to_instructions(schematic))
+    def get_script(self):
+        return Script.from_bytes(self.instructions[-1].data)
+
+    def get_signatures(self):
+        return [ i.data for i in self.instructions[1:-1] ]
+
 
 
 class PayToScriptOut(Script):
+
+    @classmethod
+    def create(cls, script):
+        schematic = [ OP_HASH160, script.to_hash(), OP_EQUAL ]
+        return cls(to_instructions(schematic))
 
     @staticmethod
     def is_valid(script):
         return script.get_structure() == (OP_HASH160, 'PUSH', OP_EQUAL)
 
-    def __new__(cls, script):
-        schematic = [ OP_HASH160, script.to_hash(), OP_EQUAL ]
-        return super(PayToScriptOut, cls).__new__(cls, to_instructions(schematic))
+    def get_script_hash(self):
+        return self.instructions[1].data
 
 
 class OpReturnOut(Script):
+
+    @classmethod
+    def create(cls, data):
+        schematic = [ OP_RETURN, data ]
+        return cls(to_instructions(schematic))
 
     @staticmethod
     def is_valid(script):
         return script.get_structure() == (OP_RETURN, 'PUSH')
 
-    def __new__(cls, data):
-        schematic = [ OP_RETURN, data ]
-        return super(OpReturnOut, cls).__new__(cls, to_instructions(schematic))
+    def get_data(self):
+        return self.instructions[1].data
 
 
 class RedeemMultisig(Script):
+
+    @classmethod
+    def create(cls, pubkeys, min_signatures):
+        schematic = (
+            [ Opcode.for_number(min_signatures) ] +
+            [ pubkey.to_bytes() for pubkey in pubkeys ] +
+            [ Opcode.for_number(len(pubkeys)) ] +
+            [ OP_CHECKMULTISIG ]
+        )
+
+        return cls(to_instructions(schematic))
 
     @staticmethod
     def is_valid(script):
@@ -249,18 +282,14 @@ class RedeemMultisig(Script):
             all(op == 'PUSH' for op in structure[1:-2])
         )
 
-    def __new__(cls, pubkeys, min_signatures):
-        schematic = (
-            [ Opcode.for_number(min_signatures) ] +
-            [ pubkey.to_bytes() for pubkey in pubkeys ] +
-            [ Opcode.for_number(len(pubkeys)) ] +
-            [ OP_CHECKMULTISIG ]
-        )
+    def get_min_signatures(self):
+        return self.instructions[0].opcode.number_value()
 
-        return super(RedeemMultisig, cls).__new__(cls, to_instructions(schematic))
+    def get_public_keys(self):
+        return [ PublicKey.from_bytes(i.data) for i in self.instructions[1:-2] ]
 
 
-SUBCLASSES = [
+SCRIPT_SUBCLASSES = [
     PayToPubkeyIn,
     PayToPubkeyOut,
     PayToScriptIn,

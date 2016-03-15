@@ -14,9 +14,28 @@ BaseOutput = collections.namedtuple('Output',
 
 class Output(BaseOutput):
 
+    class Error(BitforgeError):
+        pass
+
     def __new__(cls, amount, script):
         # TODO validation
         return super(Output, cls).__new__(cls, amount, script)
+
+    @classmethod
+    def create(cls, amount, script):
+        script = Script.create(script.instructions) # classified copy
+
+        if isinstance(script, PayToPubkeyOut):
+            return AddressOutput(amount, script)
+
+        elif isinstance(script, PayToScriptOut):
+            return ScriptOutput(amount, script)
+
+        elif isinstance(script, OpReturnOut):
+            return DataOutput(amount, script)
+
+        else:
+            return Output(amount, script)
 
     def to_bytes(self):
         buffer = Buffer()
@@ -36,60 +55,60 @@ class Output(BaseOutput):
     def to_hex(self):
         return encode_hex(self.to_bytes()).decode('utf-8')
 
-    @classmethod
-    def from_hex(cls, string):
-        return cls.from_bytes(decode_hex(string))
+    @staticmethod
+    def from_hex(string):
+        return Output.from_bytes(decode_hex(string))
 
-    @classmethod
-    def from_bytes(cls, bytes):
-        return cls.from_buffer(Buffer(bytes))
+    @staticmethod
+    def from_bytes(bytes):
+        return Output.from_buffer(Buffer(bytes))
 
-    @classmethod
+    @staticmethod
     def from_buffer(cls, buffer):
         # Inverse operation of Output.to_bytes(), check that out.
         amount = decode_int(buffer.read(8), big_endian = False)
 
         script_len = buffer.read_varint()
-        script     = Script.from_bytes(buffer.read(script_len))
+        script = Script.from_bytes(buffer.read(script_len))
 
-        return cls(amount, script)
+        return Output.create(amount, script)
 
 
 class AddressOutput(Output):
 
-    def __new__(cls, amount, address):
-        script = PayToPubkeyOut(address)
-        return super(AddressOutput, cls).__new__(cls, amount, script)
+    @classmethod
+    def create(cls, amount, address):
+        script = PayToPubkeyOut.create(address)
+        return cls(amount, script)
 
 
 class ScriptOutput(Output):
 
-    def __new__(cls, amount, redeem_script):
-        script = PayToScriptOut(redeem_script)
-        return super(ScriptOutput, cls).__new__(cls, amount, script)
+    @classmethod
+    def create(cls, amount, redeem_script):
+        script = PayToScriptOut.create(redeem_script)
+        return cls(amount, script)
 
 
 class MultisigOutput(ScriptOutput):
 
-    def __new__(cls, amount, pubkeys, min_signatures):
-        redeem_script = RedeemMultisig(pubkeys, min_signatures)
-        return super(MultisigOutput, cls).__new__(cls, amount, redeem_script)
+    @classmethod
+    def create(cls, amount, pubkeys, min_signatures):
+        redeem_script = RedeemMultisig.create(pubkeys, min_signatures)
+        return cls(amount, redeem_script)
 
 
 class DataOutput(Output):
 
-    class Error(BitforgeError):
-        pass
-
-    class TooMuchData(Error, NumberError):
+    class TooMuchData(Output.Error, NumberError):
         "DataOutputs can carry at most 80 bytes, but {number} were passed in"
 
-
-    def __new__(cls, bytes):
-        if len(bytes) > 80:
-            raise DataOutput.TooMuchData(len(bytes))
+    @classmethod
+    def create(cls, data):
+        if len(data) > 80:
+            raise DataOutput.TooMuchData(len(data))
 
         amount = 0
-        script = OpReturnOut(bytes)
+        script = OpReturnOut.create(data)
 
-        return super(DataOutput, cls).__new__(cls, amount, script)
+        return cls(amount, script)
