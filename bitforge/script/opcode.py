@@ -195,11 +195,11 @@ class Opcode(object):
             return Opcode.opcode_number_to_name[self.number]
 
     def is_number(self):
-        return self == OP_0 or (OP_1 <= self.number <= OP_16)
+        return self == OP_0 or (OP_1 <= self <= OP_16)
 
     def number_value(self):
-        if not self.is_number(): raise WrongOpcodeType(self)
-        return 0 if self == OP_O else (self.number - 80)
+        if not self.is_number(): raise Opcode.WrongOpcodeType(self)
+        return 0 if self == OP_0 else (self.number - 80)
 
     def is_push(self):
         return self.is_const_push() or self.is_var_push()
