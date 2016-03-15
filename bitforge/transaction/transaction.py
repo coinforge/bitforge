@@ -5,7 +5,6 @@ from bitforge.encoding import *
 from bitforge.errors import *
 from bitforge.tools import Buffer, enforce_all, instance_of
 from bitforge.signature import SIGHASH_ALL
-from bitforge.script import Script
 from bitforge.transaction import Input, Output
 
 

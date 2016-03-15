@@ -5,7 +5,7 @@ from bitforge.transaction import Transaction, Input, Output
 from bitforge.tools import Buffer
 from bitforge.script import Script
 
-from bitforge.encoding import encode_script_number, decode_script_number, encode_int
+from bitforge.encoding import encode_script_number, decode_script_number
 from bitforge.encoding import sha1, ripemd160, sha256, hash160
 
 from .opcode import *
@@ -743,7 +743,7 @@ class Interpreter(object):
 
                 if instruction.opcode == OP_CHECKMULTISIGVERIFY:
                     if f_success:
-                        self.stack[:-1]
+                        self.stack = self.stack[:-1]
                     else:
                         self.errstr = 'SCRIPT_ERR_CHECKMULTISIGVERIFY'
                         return False

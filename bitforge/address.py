@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
-import binascii, collections
+import collections
 from enum import Enum
 
-from . import networks, utils
+from . import networks
 from .encoding import *
 from .errors import *
 from .compat import chr

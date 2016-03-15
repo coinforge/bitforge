@@ -1,10 +1,9 @@
 from __future__ import unicode_literals
 import os, hmac, hashlib, collections
-import ecdsa
 
 from . import utils, networks
 from .pubkey import PublicKey
-from .utils.intbytes import int_from_bytes, int_to_bytes, to_bytes
+from .utils.intbytes import int_from_bytes, to_bytes
 
 
 ROOT_FINGERPRINT = 0

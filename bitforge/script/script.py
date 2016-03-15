@@ -5,7 +5,6 @@ import collections
 from bitforge.encoding import *
 from bitforge.tools import Buffer
 from bitforge.errors import *
-from bitforge import Address
 
 from .opcode import *
 from .instruction import Instruction
