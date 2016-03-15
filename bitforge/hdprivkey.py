@@ -33,7 +33,7 @@ class HDPrivateKey(BaseHDPrivateKey):
         return super(HDPrivateKey, cls).__new__(cls, privkey, chain, depth, index, parent, network, fingerprint)
 
     @staticmethod
-    def fromSeed(seed = None):
+    def from_seed(seed = None):
         if seed is None:
             seed = os.urandom(MIN_SEED_LEN)
 
