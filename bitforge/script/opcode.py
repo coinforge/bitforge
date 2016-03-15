@@ -195,11 +195,12 @@ class Opcode(object):
             return Opcode.opcode_number_to_name[self.number]
 
     def is_number(self):
-        return self == OP_0 or (OP_1 <= self.number <= OP_16)
+        return self == OP_0 or (OP_1 <= self <= OP_16)
 
     def number_value(self):
-        if not self.is_number(): raise WrongOpcodeType(self)
-        return 0 if self == OP_O else (self.number - 80)
+        if not self.is_number():
+            raise Opcode.WrongOpcodeType(self)
+        return 0 if self == OP_0 else (self.number - OP_1.number + 1)
 
     def is_push(self):
         return self.is_const_push() or self.is_var_push()
@@ -213,9 +214,6 @@ class Opcode(object):
         # PUSHDATA1, PUSHDATA2, and PUSHDATA4 push `n` bytes onto the stack,
         # where `n` is the integer in the 1/2/4 bytes following the opcode
         return self in (OP_PUSHDATA1, OP_PUSHDATA2, OP_PUSHDATA4)
-
-    def equal_without_data(self, other):
-        return  self == other or (self.is_push() and other.is_push())
 
     def __repr__(self):
         if self.is_const_push():
@@ -307,6 +305,9 @@ class Opcode(object):
 
     @staticmethod
     def data_length_nbytes(opcode):
+        if not opcode.is_var_push():
+            raise Opcode.WrongOpcodeType(opcode)
+
         return {
             OP_PUSHDATA1: 1,
             OP_PUSHDATA2: 2,
