@@ -44,6 +44,20 @@ class Script(BaseScript):
         return tuple(i.opcode if not i.is_push() else 'PUSH' for i in self.instructions)
 
     @staticmethod
+    def create(instructions):
+        generic = Script(instructions)
+        subcls = Script.classify(generic)
+        return subcls(instructions) if subcls else generic
+
+    @staticmethod
+    def classify(script):
+        for subcls in SUBCLASSES:
+            if subcls.is_valid(script):
+                return subcls
+
+        return None
+
+    @staticmethod
     def from_bytes(bytes):
         buffer = Buffer(bytes)
         return Script.from_buffer(buffer)
@@ -67,7 +81,7 @@ class Script(BaseScript):
 
             instructions.append(Instruction(opcode, data))
 
-        return Script(instructions)
+        return Script.create(instructions)
 
     @staticmethod
     def from_string(string):
@@ -119,11 +133,11 @@ class Script(BaseScript):
             except StopIteration:
                 raise Script.MissingPushArguments(token)
 
-        return Script(instructions)
+        return Script.create(instructions)
 
     @staticmethod
     def compile(schematic):
-        return Script(to_instructions(schematic))
+        return Script.create(to_instructions(schematic))
 
     def push_data(self, bytes):
         instruction = Instruction.push_for(bytes)
@@ -245,6 +259,16 @@ class RedeemMultisig(Script):
         )
 
         return super(RedeemMultisig, cls).__new__(cls, to_instructions(schematic))
+
+
+SUBCLASSES = [
+    PayToPubkeyIn,
+    PayToPubkeyOut,
+    PayToScriptIn,
+    PayToScriptOut,
+    OpReturnOut,
+    RedeemMultisig,
+]
 
 
 def to_instructions(schematic):
