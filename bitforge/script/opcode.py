@@ -175,6 +175,8 @@ class Opcode(object):
     class TypeError(Error, ObjectError):
         "Opcodes are initialized from numbers and names, got object {object}"
 
+    class WrongOpcodeType(Error, ObjectError):
+        "Opcode {object.name} does not support this operation"
 
     opcode_number_to_name = {}  # Filled after class definition
 
@@ -191,6 +193,13 @@ class Opcode(object):
             return "_PUSH_%d_BYTES" % self.number
         else:
             return Opcode.opcode_number_to_name[self.number]
+
+    def is_number(self):
+        return self == OP_0 or (OP_1 <= self.number <= OP_16)
+
+    def number_value(self):
+        if not self.is_number(): raise WrongOpcodeType(self)
+        return 0 if self == OP_O else (self.number - 80)
 
     def is_push(self):
         return self.is_const_push() or self.is_var_push()

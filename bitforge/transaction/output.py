@@ -4,7 +4,7 @@ import collections
 from bitforge.encoding import *
 from bitforge.errors import *
 from bitforge.tools import Buffer
-from bitforge.script import Script
+from bitforge.script import Script, PayToPubkeyOut, PayToScriptOut, RedeemMultisig, OpReturnOut
 
 
 BaseOutput = collections.namedtuple('Output',
@@ -58,21 +58,21 @@ class Output(BaseOutput):
 class AddressOutput(Output):
 
     def __new__(cls, amount, address):
-        script = Script.pay_to_pubkey_out(address)
+        script = PayToPubkeyOut(address)
         return super(AddressOutput, cls).__new__(cls, amount, script)
 
 
 class ScriptOutput(Output):
 
     def __new__(cls, amount, redeem_script):
-        script = Script.pay_to_script_out(redeem_script)
+        script = PayToScriptOut(redeem_script)
         return super(ScriptOutput, cls).__new__(cls, amount, script)
 
 
 class MultisigOutput(ScriptOutput):
 
     def __new__(cls, amount, pubkeys, min_signatures):
-        redeem_script = Script.redeem_multisig(pubkeys, min_signatures)
+        redeem_script = RedeemMultisig(pubkeys, min_signatures)
         return super(MultisigOutput, cls).__new__(cls, amount, redeem_script)
 
 
@@ -90,6 +90,6 @@ class DataOutput(Output):
             raise DataOutput.TooMuchData(len(bytes))
 
         amount = 0
-        script = Script.op_return(bytes)
+        script = OpReturnOut(bytes)
 
         return super(DataOutput, cls).__new__(cls, amount, script)

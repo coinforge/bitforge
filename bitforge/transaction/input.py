@@ -5,7 +5,7 @@ from bitforge.encoding import *
 from bitforge.errors import *
 from bitforge.tools import Buffer
 from bitforge.signature import SIGHASH_ALL
-from bitforge.script import Script
+from bitforge.script import Script, PayToPubkeyIn, PayToScriptIn, RedeemMultisig, PayToPubkeyOut
 
 
 FINAL_SEQ_NUMBER = 0xFFFFFFFF
@@ -108,7 +108,7 @@ class AddressInput(Input):
         # Bitcoin terms) is a copy of the UTXO Script from the previous
         # transaction. Assuming that Output had a standard Pay-to-Pubkey Script,
         # we don't need to actually fetch the data.
-        placeholder_script = Script.pay_to_pubkey_out(address)
+        placeholder_script = PayToPubkeyOut(address)
 
         return super(AddressInput, cls).__new__(cls, tx_id, txo_index, placeholder_script, seq_number)
 
@@ -116,7 +116,7 @@ class AddressInput(Input):
         if len(privkeys) != 1:
             raise AddressInput.InvalidSignatureCount(1, len(privkeys))
 
-        signed_script = Script.pay_to_pubkey_in(
+        signed_script = PayToPubkeyIn(
             pubkey    = privkeys[0].to_public_key(),
             signature = privkeys[0].sign(payload) + chr(sigtype)
         )
@@ -135,7 +135,7 @@ class ScriptInput(Input):
         # Signing a ScriptInput requires embedding the redeem Script (already
         # set as placeholder in our `script` property by the time this method
         # is invoked) in a standard Pay-to-Script Script.
-        signed_script = Script.pay_to_script_in(
+        signed_script = PayToScriptIn(
             script     = self.script,
             signatures = [ pk.sign(payload) + chr(sigtype) for pk in privkeys ]
         )
@@ -149,6 +149,6 @@ class MultisigInput(ScriptInput):
         # There is nothing magical about a MultisigInput. All we need to do
         # is construct the placeholder Script for the ScriptInput automatically,
         # since we know the form it will take.
-        placeholder_script = Script.redeem_multisig(pubkeys, min_signatures)
+        placeholder_script = RedeemMultisig(pubkeys, min_signatures)
 
         return super(MultisigInput, cls).__new__(cls, tx_id, txo_index, placeholder_script, seq_number)
