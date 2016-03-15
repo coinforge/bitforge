@@ -24,18 +24,6 @@ class HDPublicKey(BaseHDPublicKey):
 
         return super(HDPublicKey, cls).__new__(cls, pubkey, chain, depth, index, parent, network, fingerprint)
 
-    @staticmethod
-    def fromSeed(seed = None):
-        if seed is None:
-            seed = os.urandom(MIN_SEED_LEN)
-
-        if len(seed) < MIN_SEED_LEN:
-            raise ValueError("HDPublicKey seed must be at least 32 bytes long")
-
-        signed64 = hmac.new(HMAC_MAGIC_KEY, seed, hashlib.sha512).digest()
-
-        return HDPublicKey(pubkey = PublicKey.from_bytes(signed64[:32]), chain = signed64[32:])
-
     # TODO: massage this
     @staticmethod
     def from_string(b58_str):
