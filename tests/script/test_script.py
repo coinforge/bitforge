@@ -108,7 +108,7 @@ class TestScript:
 
         no = [
             Script(),
-            PayToPubkeyOut.create(Address('a' * 20))
+            PayToPubkeyOut.create(address)
         ]
 
         assert all(map(PayToPubkeyIn.is_valid, yes))
@@ -167,7 +167,7 @@ class TestScript:
         privkey = PrivateKey()
         pubkey = privkey.to_public_key()
         address = pubkey.to_address()
-        signature = 'foo'
+        signature = b'foo'
 
         i_script = PayToPubkeyIn.create(pubkey, signature)
         o_script = PayToPubkeyOut.create(address)
@@ -180,8 +180,8 @@ class TestScript:
         privkey = PrivateKey()
         pubkey = privkey.to_public_key()
         address = pubkey.to_address()
-        embedded = Script.compile([ OP_0, 'bar', OP_1 ])
-        signatures = [ 'foo', 'bar' ]
+        embedded = Script.compile([ OP_0, b'bar', OP_1 ])
+        signatures = [ b'foo', b'bar' ]
 
         i_script = PayToScriptIn.create(embedded, signatures)
         o_script = PayToScriptOut.create(embedded)
@@ -191,14 +191,14 @@ class TestScript:
         assert o_script.get_script_hash() == embedded.to_hash()
 
     def test_op_return_getters(self):
-        data = 'foo bar baz'
+        data = b'foo bar baz'
         script = OpReturnOut.create(data)
         assert script.get_data() == data
 
     def test_redeem_multisig_getters(self):
         privkeys = [ PrivateKey(), PrivateKey() ]
         pubkeys = [ privkey.to_public_key() for privkey in privkeys ]
-        signatures = [ 'foo', 'bar' ]
+        signatures = [ b'foo', b'bar' ]
 
         script = RedeemMultisig.create(pubkeys, 2)
 
@@ -209,7 +209,7 @@ class TestScript:
         privkey = PrivateKey()
         pubkey = privkey.to_public_key()
         address = pubkey.to_address()
-        signature = 'foo'
+        signature = b'foo'
         script = RedeemMultisig.create([ pubkey ], 1)
 
         class_to_arguments = {
@@ -218,7 +218,7 @@ class TestScript:
             PayToScriptIn : [ script, [signature] ],
             PayToScriptOut: [ script ],
             RedeemMultisig: [ [pubkey], 1 ],
-            OpReturnOut   : [ 'data' ]
+            OpReturnOut   : [ b'data' ]
         }
 
         for cls, args in class_to_arguments.items():

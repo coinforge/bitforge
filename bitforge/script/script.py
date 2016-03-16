@@ -159,7 +159,7 @@ class Script(BaseScript):
     def to_bytes(self):
         data = bytearray()
         for i in self.instructions: data += i.to_bytes()
-        return str(data)
+        return bytes(data)
 
     def to_hex(self):
         return encode_hex(self.to_bytes()).decode('utf-8')
@@ -320,7 +320,9 @@ def to_instructions(schematic):
             else:
                 args = (Opcode(item[0]), item[1])
 
-        # TODO catch-all else exception
+        else:
+            raise TypeError("Can't auto-create an Instruction from object " + repr(item))
+
         instructions.append(Instruction(*args))
 
     return instructions

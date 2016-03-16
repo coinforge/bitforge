@@ -47,7 +47,7 @@ class TestInput:
         privkey = PrivateKey()
         pubkey = privkey.to_public_key()
         address = pubkey.to_address()
-        signature = 'foo'
+        signature = b'foo'
         script = Script.compile([ OP_0 ])
 
         i_addr = Input.create('1' * 32, 0, PayToPubkeyIn.create(address, signature))
@@ -63,7 +63,7 @@ class TestOutput:
 
     def test_too_much_data(self):
         with raises(DataOutput.TooMuchData):
-            DataOutput.create("0" * 81)
+            DataOutput.create(b'0' * 81)
 
     def test_classify(self):
         privkey = PrivateKey()
@@ -77,5 +77,5 @@ class TestOutput:
         o_script = Output.create(1, PayToScriptOut.create(script))
         assert isinstance(o_script, ScriptOutput)
 
-        o_data = Output.create(1, OpReturnOut.create('data'))
+        o_data = Output.create(1, OpReturnOut.create(b'data'))
         assert isinstance(o_data, DataOutput)
