@@ -36,7 +36,7 @@ layer below.
 from bitforge import PrivateKey, AddressInput, AddressOutput, Transaction
 
 # 1. Create an AddressInput with details from the Unspent Transaction Output
-in0 = AddressInput(
+in0 = AddressInput.create(
     tx_id     = '4baa7551933fbf26158a619c3084ccdd5c0d81930b3e74a85a33ad26d13f1a55',
     txo_index = 0,
     address   = Address.from_string('1Dy6qCRsjJ4Y3BYv7m9nf12aUMXD4RWMHC')
@@ -45,7 +45,7 @@ in0 = AddressInput(
 # 2. Create an AddressOutput that you can redeem with your PrivateKey:
 privkey = PrivateKey.from_hex('21c601c0ae6dfcdcf622e6fe2be9153ed7ada0cc90a8a08475e57060e18c0791')
 
-out0 = AddressOutput(
+out0 = AddressOutput.create(
     amount  = 1000, # satoshis
     address = privkey.to_address()
 )
@@ -64,14 +64,14 @@ signed_tx = tx.sign([ privkey ], 0)
 from bitforge import PrivateKey, AddressInput, MultisigOutput, Transaction
 
 # 1. Create an AddressInput with details from the Unspent Transaction Output
-in0 = AddressInput(
+in0 = AddressInput.create(
     tx_id     = '4baa7551933fbf26158a619c3084ccdd5c0d81930b3e74a85a33ad26d13f1a55',
     txo_index = 0,
     address   = Address.from_string('1Dy6qCRsjJ4Y3BYv7m9nf12aUMXD4RWMHC')
 )
 
 # 2. Create a MultisigOutput, given a known public keys and required signatures:
-out0 = MultisigOutput(
+out0 = MultisigOutput.create(
     amount         = 1000,
     pubkeys        = [ pubkey1, pubkey2, pubkey3 ],
     min_signatures = 2

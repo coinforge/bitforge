@@ -36,6 +36,23 @@ class Input(BaseInput):
         # TODO validation
         return super(Input, cls).__new__(cls, tx_id, txo_index, script, seq_number)
 
+    @classmethod
+    def create(cls, tx_id, txo_index, script, seq_number = FINAL_SEQ_NUMBER):
+        script = Script.create(script.instructions) # classified copy
+        args = (tx_id, txo_index, script, seq_number)
+
+        if isinstance(script, PayToPubkeyIn):
+            return AddressInput(*args)
+
+        elif isinstance(script, PayToScriptIn):
+            return ScriptInput(*args)
+
+        elif isinstance(script, OpReturnOut):
+            return DataOutput(*args)
+
+        else:
+            return Output(amount, script)
+
     def to_bytes(self):
         buffer = Buffer()
         script = self.script.to_bytes()
@@ -103,14 +120,15 @@ class Input(BaseInput):
 
 class AddressInput(Input):
 
-    def __new__(cls, tx_id, txo_index, address, seq_number = FINAL_SEQ_NUMBER):
+    @classmethod
+    def create(cls, tx_id, txo_index, address, seq_number = FINAL_SEQ_NUMBER):
         # The placeholder Script for an AddressInput (Pay-to-Pubkey, in raw
         # Bitcoin terms) is a copy of the UTXO Script from the previous
         # transaction. Assuming that Output had a standard Pay-to-Pubkey Script,
         # we don't need to actually fetch the data.
         placeholder_script = PayToPubkeyOut.create(address)
 
-        return super(AddressInput, cls).__new__(cls, tx_id, txo_index, placeholder_script, seq_number)
+        return cls(tx_id, txo_index, placeholder_script, seq_number)
 
     def sign(self, privkeys, payload, sigtype = SIGHASH_ALL):
         if len(privkeys) != 1:
@@ -125,11 +143,13 @@ class AddressInput(Input):
 
 
 class ScriptInput(Input):
-    def __new__(cls, tx_id, txo_index, script, seq_number = FINAL_SEQ_NUMBER):
+
+    @classmethod
+    def create(cls, tx_id, txo_index, script, seq_number = FINAL_SEQ_NUMBER):
         # The placeholder Script for a ScriptInput (Pay-to-Script, in raw
         # Bitcoin terms) is the embedded (redeeming) Script itself.
 
-        return super(ScriptInput, cls).__new__(cls, tx_id, txo_index, script, seq_number)
+        return cls(tx_id, txo_index, script, seq_number)
 
     def sign(self, privkeys, payload, sigtype = SIGHASH_ALL):
         # Signing a ScriptInput requires embedding the redeem Script (already
@@ -145,10 +165,11 @@ class ScriptInput(Input):
 
 class MultisigInput(ScriptInput):
 
-    def __new__(cls, tx_id, txo_index, pubkeys, min_signatures, seq_number = FINAL_SEQ_NUMBER):
+    @classmethod
+    def create(cls, tx_id, txo_index, pubkeys, min_signatures, seq_number = FINAL_SEQ_NUMBER):
         # There is nothing magical about a MultisigInput. All we need to do
         # is construct the placeholder Script for the ScriptInput automatically,
         # since we know the form it will take.
         placeholder_script = RedeemMultisig.create(pubkeys, min_signatures)
 
-        return super(MultisigInput, cls).__new__(cls, tx_id, txo_index, placeholder_script, seq_number)
+        return cls(tx_id, txo_index, placeholder_script, seq_number)

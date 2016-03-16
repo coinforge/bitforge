@@ -1,9 +1,12 @@
 from pytest import raises
 
 from bitforge import PrivateKey
-from bitforge import Transaction, Input, Output
+from bitforge import Transaction, Input, Output, Script
 from bitforge.transaction import AddressOutput, ScriptOutput, DataOutput
-from bitforge.script import Script, PayToPubkeyOut, PayToScriptOut, OpReturnOut
+from bitforge.transaction import AddressInput, ScriptInput
+from bitforge.script import PayToPubkeyOut, PayToScriptOut, OpReturnOut
+from bitforge.script import PayToPubkeyIn, PayToScriptIn
+from bitforge.script.opcode import OP_0
 
 
 class MockInput(Input):
@@ -40,6 +43,19 @@ class TestInput:
     def test_create(self):
         MockInput()
 
+    def test_classify(self):
+        privkey = PrivateKey()
+        pubkey = privkey.to_public_key()
+        address = pubkey.to_address()
+        signature = 'foo'
+        script = Script.compile([ OP_0 ])
+
+        i_addr = Input.create('1' * 32, 0, PayToPubkeyIn.create(address, signature))
+        assert isinstance(i_addr, AddressInput)
+
+        i_script = Input.create('1' * 32, 0, PayToScriptIn.create(script, [signature]))
+        assert isinstance(i_script, ScriptInput)
+
 
 class TestOutput:
     def test_create(self):
@@ -55,11 +71,11 @@ class TestOutput:
         address = pubkey.to_address()
         script = Script()
 
-        o_p2pk = Output.create(1, PayToPubkeyOut.create(address))
-        assert isinstance(o_p2pk, AddressOutput)
+        o_addr = Output.create(1, PayToPubkeyOut.create(address))
+        assert isinstance(o_addr, AddressOutput)
 
-        o_p2s = Output.create(1, PayToScriptOut.create(script))
-        assert isinstance(o_p2s, ScriptOutput)
+        o_script = Output.create(1, PayToScriptOut.create(script))
+        assert isinstance(o_script, ScriptOutput)
 
         o_data = Output.create(1, OpReturnOut.create('data'))
         assert isinstance(o_data, DataOutput)
