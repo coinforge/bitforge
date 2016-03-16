@@ -6,9 +6,9 @@ import termcolor # not a library dependency, obviously
 
 
 def log(title, content):
-    print termcolor.colored(title + ":", 'green', attrs = ['bold'])
-    print content
-    print ''
+    print(termcolor.colored(title + ":", 'green', attrs = ['bold']))
+    print(content)
+    print('')
 
 
 PK_HEX = '21c601c0ae6dfcdcf622e6fe2be9153ed7ada0cc90a8a08475e57060e18c0791'
@@ -30,5 +30,5 @@ t2 = Transaction.from_bytes(t1.to_bytes())
 
 log("Transaction hex 1", t1.to_hex())
 log("Transaction hex 2", t2.to_hex())
-print 'equal', t1 == t2
+print('equal', t1 == t2)
 # __import__('IPython').embed()

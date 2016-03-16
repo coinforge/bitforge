@@ -24,7 +24,7 @@ tx = Transaction(inputs, outputs)
 signed_transaction_hex = tx.sign([ privkey ], 0).to_hex()
 
 
-print ''
+print('')
 log("Private Key", privkey.to_hex())
 log("Public Key", pubkey.to_hex())
 log("Address", address.to_string())

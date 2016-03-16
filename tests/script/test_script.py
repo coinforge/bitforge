@@ -146,7 +146,7 @@ class TestScript:
 
     def test_is_pay_to_script_in(self):
         address = PrivateKey().to_address()
-        embedded = PayToPubkeyOut(address)
+        embedded = PayToPubkeyOut.create(address)
 
         yes = [
             PayToScriptIn.create(embedded, [ b'foo' ]),
