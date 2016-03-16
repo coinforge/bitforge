@@ -311,7 +311,7 @@ def to_instructions(schematic):
         elif isinstance(item, Number):
             args = (Opcode(item),)
 
-        elif isinstance(item, basestring):
+        elif isinstance(item, bytes):
             args = (Opcode.push_for(len(item)), item)
 
         elif isinstance(item, tuple):

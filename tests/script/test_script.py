@@ -100,9 +100,10 @@ class TestScript:
         assert script.is_push_only() is False
 
     def test_is_pay_to_pubkey_in(self):
+        address = PrivateKey().to_address()
         yes = [
-            PayToPubkeyIn.create(Address('a' * 20), 'foo'),
-            PayToPubkeyIn.create(Address('x' * 20), 'bar')
+            PayToPubkeyIn.create(address, b'foo'),
+            PayToPubkeyIn.create(address, b'bar')
         ]
 
         no = [
@@ -114,45 +115,48 @@ class TestScript:
         assert not any(map(PayToPubkeyIn.is_valid, no))
 
     def test_is_pay_to_pubkey_out(self):
+        address = PrivateKey().to_address()
         yes = [
-            PayToPubkeyOut.create(Address('a' * 20)),
-            PayToPubkeyOut.create(Address('x' * 20))
+            PayToPubkeyOut.create(address),
+            PayToPubkeyOut.create(address)
         ]
 
         no = [
             Script(),
-            PayToPubkeyIn.create(Address('a' * 20), 'foo')
+            PayToPubkeyIn.create(address, b'foo')
         ]
 
         assert all(map(PayToPubkeyOut.is_valid, yes))
         assert not any(map(PayToPubkeyOut.is_valid, no))
 
     def test_is_pay_to_script_out(self):
-        embedded = PayToPubkeyOut.create(Address('x' * 20))
+        address = PrivateKey().to_address()
+        embedded = PayToPubkeyOut.create(address)
 
         yes = [ PayToScriptOut.create(embedded) ]
 
         no = [
             Script(),
-            PayToPubkeyOut.create(Address('a' * 20)),
-            PayToScriptIn.create(embedded, [ 'foo' ])
+            PayToPubkeyOut.create(address),
+            PayToScriptIn.create(embedded, [ b'foo' ])
         ]
 
         assert all(map(PayToScriptOut.is_valid, yes))
         assert not any(map(PayToScriptOut.is_valid, no))
 
     def test_is_pay_to_script_in(self):
-        embedded = PayToPubkeyOut.create(Address('x' * 20))
+        address = PrivateKey().to_address()
+        embedded = PayToPubkeyOut(address)
 
         yes = [
-            PayToScriptIn.create(embedded, [ 'foo' ]),
-            PayToScriptIn.create(Script.compile([ 'bar' ]), [ 'foo' ]),
-            PayToScriptIn.create(Script.compile([ 'baz' ]), [ 'one', 'two' ]),
+            PayToScriptIn.create(embedded, [ b'foo' ]),
+            PayToScriptIn.create(Script.compile([ b'bar' ]), [ b'foo' ]),
+            PayToScriptIn.create(Script.compile([ b'baz' ]), [ b'one', b'two' ]),
         ]
 
         no = [
             Script(),
-            PayToPubkeyIn.create(Address('a' * 20), 'foo'),
+            PayToPubkeyIn.create(address, b'foo'),
             PayToScriptOut.create(Script())
         ]
 
