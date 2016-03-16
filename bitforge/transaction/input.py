@@ -141,6 +141,12 @@ class AddressInput(Input):
 
         return self.replace_script(signed_script)
 
+    def can_sign(self, privkeys):
+        return (
+            len(privkeys) == 1 and
+            privkeys[0].to_address().phash == self.script.get_address_hash()
+        )
+
 
 class ScriptInput(Input):
 
@@ -173,3 +179,15 @@ class MultisigInput(ScriptInput):
         placeholder_script = RedeemMultisig.create(pubkeys, min_signatures)
 
         return cls(tx_id, txo_index, placeholder_script, seq_number)
+
+    def can_sign(self, privkeys):
+        if len(privkeys) != self.script.get_min_signatures():
+            return False
+
+        expected_pubkeys = self.script.get_public_keys()
+
+        for privkey in privkeys:
+            if privkey.to_public_key() not in expected_pubkeys:
+                return False
+
+        return True
