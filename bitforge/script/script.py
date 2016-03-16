@@ -157,7 +157,9 @@ class Script(BaseScript):
         return str(self.instructions)
 
     def to_bytes(self):
-        return b''.join(i.to_bytes() for i in self.instructions)
+        data = bytearray()
+        for i in self.instructions: data += i.to_bytes()
+        return str(data)
 
     def to_hex(self):
         return encode_hex(self.to_bytes()).decode('utf-8')

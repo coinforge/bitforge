@@ -64,7 +64,7 @@ class Output(BaseOutput):
         return Output.from_buffer(Buffer(bytes))
 
     @staticmethod
-    def from_buffer(cls, buffer):
+    def from_buffer(buffer):
         # Inverse operation of Output.to_bytes(), check that out.
         amount = decode_int(buffer.read(8), big_endian = False)
 

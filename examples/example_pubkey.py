@@ -16,8 +16,8 @@ pubkey  = privkey.to_public_key()
 address = pubkey.to_address()
 
 
-inputs  = [ AddressInput(PREV_TX_ID, UTXO_INDEX, address) ]
-outputs = [ AddressOutput(AMOUNT - 1000, address) ]
+inputs  = [ AddressInput.create(PREV_TX_ID, UTXO_INDEX, address) ]
+outputs = [ AddressOutput.create(AMOUNT - 1000, address) ]
 
 tx = Transaction(inputs, outputs)
 
